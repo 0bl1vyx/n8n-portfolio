@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeroflow | AI Automation & n8n Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        // Custom "Cyber" palette
+                        cyan: { 400: '#22d3ee', 500: '#06b6d4' },
+                        blue: { 500: '#3b82f6', 600: '#2563eb' },
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                        'glow': 'glow 3s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        glow: {
+                           '0%': { textShadow: '0 0 10px #22d3ee, 0 0 20px #06b6d4' },
+                           '100%': { textShadow: '0 0 20px #22d3ee, 0 0 30px #06b6d4' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        
+        /* Background Grid Pattern */
+        body {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(199, 89%, 24%, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(227, 75%, 22%, 0.15) 0px, transparent 50%),
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 50px 50px, 50px 50px;
+            background-attachment: fixed;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="text-slate-300 font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+
+    <nav class="fixed top-0 w-full z-50 border-b border-white/5 glass-card md:px-10">
+        <div class="max-w-6xl mx-auto p-6 flex justify-between items-center h-20">
+            <div class="text-2xl font-bold text-white tracking-tighter font-mono relative group">
+                ZERO<span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 group-hover:animate-glow transition-all">FLOW</span>
+                <div class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 group-hover:w-full"></div>
+            </div>
+            <a href="mailto:your-email@gmail.com" class="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-cyan-400 to-blue-600 group-hover:from-cyan-400 group-hover:to-blue-600 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-cyan-200 dark:focus:ring-cyan-800">
+                <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-slate-900 rounded-md group-hover:bg-opacity-0 font-mono">
+                    HIRC_ME
+                </span>
+            </a>
+        </div>
+    </nav>
+
+    <header class="max-w-6xl mx-auto px-6 pt-32 pb-20 md:pt-40 animate-fade-in-up">
+        <div class="inline-block px-3 py-1 mb-6 text-xs font-mono text-cyan-400 bg-cyan-950/50 rounded-full border border-cyan-800/50">
+            > Hi, I'm 0bl1vyx (Priyo)
+        </div>
+        <h1 class="text-5xl md:text-8xl font-extrabold text-white mb-8 leading-tight tracking-tight">
+            Building <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">Autonomous</span><br>
+            Business Systems.
+        </h1>
+        <p class="text-xl md:text-2xl max-w-2xl text-slate-400 mb-10 leading-relaxed font-light">
+            I specialize in reverse engineering complex problems and building n8n & AI automations that turn manual grind into background processes.
+        </p>
+        
+        <div class="flex flex-wrap gap-3">
+            <div class="glass-card px-4 py-2 rounded-md flex items-center gap-2">
+                <div class="h-2 w-2 bg-red-500 rounded-full animate-pulse"></div>
+                <span class="text-sm font-mono text-slate-200">n8n Expert</span>
+            </div>
+             <div class="glass-card px-4 py-2 rounded-md flex items-center gap-2">
+                <span class="text-sm font-mono text-slate-200">Python & Bash</span>
+            </div>
+             <div class="glass-card px-4 py-2 rounded-md flex items-center gap-2">
+                <span class="text-sm font-mono text-slate-200">LLM Agents</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-16 relative z-10">
+        <div class="flex items-center justify-between mb-12">
+             <h2 class="text-2xl md:text-3xl text-white font-bold font-mono">
+                <span class="text-cyan-400">./</span>CASE_STUDIES
+            </h2>
+             <div class="h-[1px] flex-grow bg-slate-800 ml-6 hidden md:block"></div>
+        </div>
+       
+        
+        <div id="project-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="glass-card h-64 rounded-2xl animate-pulse"></div>
+            <div class="glass-card h-64 rounded-2xl animate-pulse hidden md:block"></div>
+        </div>
+    </main>
+
+    <footer class="text-center py-12 text-slate-500 text-sm border-t border-slate-800/50 relative z-10 font-mono">
+        <p>Designed & Engineered by 0bl1vyx. &copy; 2026</p>
+    </footer>
+
+    <script>
+        // Added a slight delay so you can see the loading animation
+        setTimeout(loadProjects, 500);
+
+        async function loadProjects() {
+            try {
+                const response = await fetch('projects.json');
+                const projects = await response.json();
+                
+                const grid = document.getElementById('project-grid');
+                grid.innerHTML = ''; 
+
+                projects.forEach((project, index) => {
+                    // Determine accent color based on price type
+                    const isPaid = project.price.includes('$');
+                    const accentClass = isPaid ? 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20' : 'text-purple-400 bg-purple-400/10 border-purple-400/20';
+                    const borderHover = isPaid ? 'group-hover:border-cyan-500/50' : 'group-hover:border-purple-500/50';
+                    const shadowHover = isPaid ? 'group-hover:shadow-[0_0_40px_-10px_rgba(34,211,238,0.2)]' : 'group-hover:shadow-[0_0_40px_-10px_rgba(192,132,252,0.2)]';
+
+                    // Staggered Animation Delay
+                    const delay = index * 100;
+
+                    const card = `
+                        <div class="group glass-card p-7 rounded-2xl relative transition-all duration-500 hover:-translate-y-2 ${borderHover} ${shadowHover} animate-fade-in-up" style="animation-delay: ${delay}ms">
+                            
+                            <div class="absolute top-4 right-4 ${accentClass} text-xs font-mono px-3 py-1 rounded-full border">
+                                ${project.price}
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-2 mb-6 mt-2">
+                                ${project.tags.map(tag => `<span class="text-[11px] uppercase tracking-wider font-semibold bg-slate-800/80 text-slate-400 px-2 py-1 rounded-md border border-slate-700/50">${tag}</span>`).join('')}
+                            </div>
+
+                             <h3 class="text-2xl text-white font-bold mb-4 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-500 transition-all duration-300">
+                                ${project.title}
+                            </h3>
+                           
+                            <p class="text-slate-400 text-sm mb-8 leading-relaxed line-clamp-3 group-hover:text-slate-300 transition-colors">
+                                ${project.description}
+                            </p>
+
+                            <a href="${project.link}" class="inline-flex items-center gap-2 text-white bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-all group/link border border-slate-700 hover:border-cyan-500/30">
+                                View Case Study 
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 group-hover/link:translate-x-1 transition-transform">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                </svg>
+                            </a>
+                        </div>
+                    `;
+                    grid.innerHTML += card;
+                });
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                grid.innerHTML = '<div class="text-red-400 bg-red-950/30 p-4 rounded border border-red-800">System Error: Failed to load project modules.</div>';
+            }
+        }
+    </script>
+</body>
+</html>
