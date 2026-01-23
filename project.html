@@ -1,115 +1,131 @@
 <!DOCTYPE html>
-<html lang="en" class="dark scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Case Study | Zeroflow</title>
+    <title>Case Study | Priyo Das</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    colors: { cyan: { 400: '#22d3ee', 500: '#06b6d4' }, blue: { 500: '#3b82f6' } }
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: { 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' }, // Trustworthy Blue
+                        slate: { 850: '#1e293b', 900: '#0f172a' }
+                    }
                 }
             }
         }
     </script>
     <style>
         body {
-            background-color: #020617;
-            background-image: radial-gradient(at 0% 0%, hsla(199, 89%, 24%, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, hsla(227, 75%, 22%, 0.15) 0px, transparent 50%);
+            background-color: #0f172a;
+            /* Professional mesh gradient matching homepage */
+            background-image: 
+                radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.10) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(30, 58, 138, 0.10) 0px, transparent 50%);
             background-attachment: fixed;
         }
-        .glass-card { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
     </style>
 </head>
-<body class="text-slate-300 font-sans antialiased min-h-screen flex flex-col">
+<body class="text-slate-300 font-sans antialiased min-h-screen flex flex-col selection:bg-brand-500/30 selection:text-white">
 
-    <nav class="w-full border-b border-white/5 glass-card">
-        <div class="max-w-4xl mx-auto p-6 flex justify-between items-center">
-            <a href="index.html" class="text-sm font-mono text-cyan-400 hover:text-cyan-300 transition flex items-center gap-2">
-                &larr; BACK_TO_HOME
+    <nav class="w-full border-b border-white/5 glass-panel">
+        <div class="max-w-5xl mx-auto px-6 h-20 flex justify-between items-center">
+            <a href="index.html" class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center gap-2 group">
+                <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Home
             </a>
-            <div class="text-xl font-bold text-white tracking-tighter font-mono">
-                ZERO<span class="text-cyan-400">FLOW</span>
+            <div class="text-lg font-bold text-white tracking-tight">
+                Priyo<span class="text-slate-500 font-normal">.Automates</span>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto px-6 py-12 flex-grow w-full">
+    <main class="max-w-5xl mx-auto px-6 py-12 flex-grow w-full">
         
-        <div id="loading" class="text-center py-20 text-slate-500 font-mono animate-pulse">
-            Loading data modules...
+        <div id="loading" class="text-center py-20 text-slate-500 animate-pulse">
+            Loading case study data...
         </div>
 
-        <div id="project-content" class="hidden opacity-0 transition-opacity duration-500">
+        <div id="project-content" class="hidden opacity-0 transition-opacity duration-700">
             
             <div class="mb-10">
-                <div class="flex flex-wrap gap-3 mb-4" id="tags-container">
+                <div class="flex flex-wrap gap-2 mb-6" id="tags-container">
                     </div>
-                <h1 id="p-title" class="text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight"></h1>
-                <p id="p-desc" class="text-xl text-slate-400 leading-relaxed"></p>
+                <h1 id="p-title" class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight"></h1>
+                <p id="p-desc" class="text-xl text-slate-400 leading-relaxed max-w-3xl"></p>
             </div>
 
-            <div class="glass-card p-2 rounded-xl mb-12">
-                <img id="p-image" src="" alt="Project Screenshot" class="w-full h-auto rounded-lg opacity-90">
+            <div class="glass-panel p-2 rounded-xl mb-12 shadow-2xl shadow-black/50">
+                <img id="p-image" src="" alt="Project Screenshot" class="w-full h-auto rounded-lg border border-slate-700/50">
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
                 
-                <div class="md:col-span-1 space-y-8">
-                    <div class="glass-card p-6 rounded-xl">
-                        <h3 class="text-white font-mono font-bold mb-4 text-sm uppercase tracking-wider border-b border-slate-700 pb-2">Tech Stack</h3>
-                        <ul id="tech-list" class="space-y-2 text-sm text-slate-400 font-mono">
-                            </ul>
+                <div class="md:col-span-1 space-y-6">
+                    <div class="glass-panel p-6 rounded-xl">
+                        <h3 class="text-white font-semibold mb-4 text-xs uppercase tracking-wider text-slate-500">Project Type</h3>
+                        <p id="p-type" class="text-brand-500 font-bold text-lg"></p>
                     </div>
-                    
-                    <div class="glass-card p-6 rounded-xl">
-                        <h3 class="text-white font-mono font-bold mb-4 text-sm uppercase tracking-wider border-b border-slate-700 pb-2">Project Type</h3>
-                        <p id="p-price" class="text-cyan-400 font-bold"></p>
+
+                    <div class="glass-panel p-6 rounded-xl">
+                        <h3 class="text-white font-semibold mb-4 text-xs uppercase tracking-wider text-slate-500">Tech Stack</h3>
+                        <ul id="tech-list" class="space-y-3 text-sm text-slate-300">
+                            </ul>
                     </div>
                 </div>
 
-                <div class="md:col-span-2 space-y-10">
+                <div class="md:col-span-2 space-y-12">
                     <section>
                         <h2 class="text-2xl text-white font-bold mb-4 flex items-center gap-3">
-                            <span class="text-cyan-500 text-lg">01.</span> The Challenge
+                            The Challenge
                         </h2>
                         <p id="p-problem" class="text-slate-400 leading-relaxed text-lg"></p>
                     </section>
 
                     <section>
                         <h2 class="text-2xl text-white font-bold mb-4 flex items-center gap-3">
-                            <span class="text-cyan-500 text-lg">02.</span> The Solution
+                            The Solution
                         </h2>
-                        <p id="p-solution" class="text-slate-400 leading-relaxed text-lg"></p>
+                        <div class="relative pl-6 border-l-2 border-brand-500/30">
+                            <p id="p-solution" class="text-slate-300 leading-relaxed text-lg"></p>
+                        </div>
                     </section>
 
                     <section>
-                        <h2 class="text-2xl text-white font-bold mb-4 flex items-center gap-3">
-                            <span class="text-cyan-500 text-lg">03.</span> The Outcome
-                        </h2>
-                        <div class="glass-card p-6 rounded-xl border-l-4 border-cyan-500">
-                            <p id="p-result" class="text-slate-200 font-medium text-lg italic"></p>
+                        <div class="bg-brand-900/20 border border-brand-500/20 p-8 rounded-xl">
+                            <h2 class="text-brand-500 font-bold mb-3 text-sm uppercase tracking-wide">Business Impact</h2>
+                            <p id="p-result" class="text-white font-medium text-xl leading-relaxed"></p>
                         </div>
                     </section>
                 </div>
             </div>
 
-            <div class="mt-20 text-center border-t border-slate-800 pt-12">
-                <h3 class="text-2xl text-white font-bold mb-4">Need something similar?</h3>
-                <a href="mailto:your-email@gmail.com" class="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-cyan-500/20 transition-all">
-                    Hire Me for a Project
+            <div class="mt-24 text-center border-t border-slate-800/50 pt-16">
+                <h3 class="text-2xl text-white font-bold mb-6">Need a similar workflow?</h3>
+                <a href="mailto:your-email@gmail.com" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white px-8 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-brand-900/20 hover:translate-y-[-2px]">
+                    Discuss Your Project
                 </a>
             </div>
         </div>
     </main>
 
-    <footer class="text-center py-8 text-slate-600 text-xs font-mono">
-        zeroflow_system // v1.0
+    <footer class="text-center py-8 text-slate-600 text-sm">
+        &copy; 2026 Priyo D.
     </footer>
 
     <script>
@@ -132,14 +148,14 @@
                 const project = projects.find(p => p.id === projectId);
 
                 if (!project) {
-                    document.getElementById('loading').innerHTML = "Error: Project not found in database.";
+                    document.getElementById('loading').innerHTML = "Error: Project not found.";
                     return;
                 }
 
                 // 4. Populate Data
                 document.getElementById('p-title').innerText = project.title;
                 document.getElementById('p-desc').innerText = project.description;
-                document.getElementById('p-price').innerText = project.price;
+                document.getElementById('p-type').innerText = project.type; // Mapped to 'type' not 'price'
                 document.getElementById('p-image').src = project.image;
                 
                 // Deep details
@@ -150,22 +166,28 @@
                 // Tags
                 const tagsContainer = document.getElementById('tags-container');
                 project.tags.forEach(tag => {
-                    tagsContainer.innerHTML += `<span class="text-xs font-mono font-bold text-cyan-300 bg-cyan-950/50 border border-cyan-800/50 px-3 py-1 rounded-full">${tag}</span>`;
+                    tagsContainer.innerHTML += `<span class="text-xs font-medium text-brand-400 bg-brand-900/30 border border-brand-500/20 px-3 py-1 rounded-full">${tag}</span>`;
                 });
 
                 // Tech Stack
                 const techList = document.getElementById('tech-list');
                 project.full_details.tech_stack.forEach(tech => {
-                    techList.innerHTML += `<li class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-cyan-500 rounded-full"></span>${tech}</li>`;
+                    techList.innerHTML += `
+                        <li class="flex items-center gap-3">
+                            <div class="w-1.5 h-1.5 bg-brand-500 rounded-full"></div>
+                            ${tech}
+                        </li>`;
                 });
 
                 // 5. Reveal Content
                 document.getElementById('loading').classList.add('hidden');
                 const content = document.getElementById('project-content');
                 content.classList.remove('hidden');
-                // Trigger reflow for transition
-                void content.offsetWidth; 
-                content.classList.remove('opacity-0');
+                
+                // Small delay to trigger the transition
+                setTimeout(() => {
+                    content.classList.remove('opacity-0');
+                }, 50);
 
             } catch (error) {
                 console.error(error);
