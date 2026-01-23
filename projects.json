@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Amazon PPC Lead Generator",
+    "tags": ["n8n", "Web Scraping", "Client Work"],
+    "description": "Automated workflow that scrapes agency websites to detect outdated WordPress versions, qualifying them as high-value leads for Amazon PPC services.",
+    "price": "$75 Project",
+    "link": "#"
+  },
+  {
+    "title": "LinkedIn Profile Scraper",
+    "tags": ["Chrome Ext", "Python", "Reverse Engineering"],
+    "description": "A custom tool bypassing standard bot detection to scrape public profile data at scale. Built as a Chrome Extension with a Python backend.",
+    "price": "Demo",
+    "link": "#"
+  },
+  {
+    "title": "AI Invoice Processing Agent",
+    "tags": ["n8n", "OpenAI", "Automation"],
+    "description": "An intelligent agent that reads PDF invoices, extracts key data (dates, amounts, tax), and auto-populates a database.",
+    "price": "$25 Project",
+    "link": "#"
+  },
+  {
+    "title": "Bug Bounty Recon Automator",
+    "tags": ["Bash", "Linux", "Security"],
+    "description": "Automated recon workflow using custom Bash scripts on Kali Linux to identify subdomains and potential vulnerabilities.",
+    "price": "Personal Tool",
+    "link": "#"
+  }
+]
