@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Case Study | Priyo Das</title>
+    <title>Project Details</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['Space Grotesk', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        accent: { 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7' },
-                        slate: { 850: '#1e293b', 900: '#0f172a' }
+                        neon: { 400: '#4ade80', 500: '#22c55e', 900: '#14532d' },
+                        dark: { bg: '#050505', card: '#0a0a0a', border: '#262626' }
                     }
                 }
             }
@@ -25,113 +25,99 @@
     </script>
     <style>
         body {
-            background-color: #020617;
-            background-image: 
-                radial-gradient(at 100% 0%, rgba(56, 189, 248, 0.05) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, rgba(56, 189, 248, 0.05) 0px, transparent 50%);
-            background-attachment: fixed;
-        }
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background-color: #050505;
+            color: #d1d5db;
         }
     </style>
 </head>
-<body class="text-slate-300 font-sans antialiased min-h-screen flex flex-col selection:bg-accent-500/30 selection:text-white">
+<body class="min-h-screen flex flex-col">
 
-    <nav class="w-full border-b border-white/5 glass-panel sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto px-6 h-16 flex justify-between items-center">
-            <a href="index.html" class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center gap-2 group font-mono">
-                <span class="text-accent-500 group-hover:-translate-x-1 transition-transform"><-</span>
-                cd ..
+    <nav class="w-full border-b border-dark-border bg-dark-bg">
+        <div class="max-w-4xl mx-auto px-6 h-16 flex justify-between items-center">
+            <a href="index.html" class="text-sm font-mono text-gray-500 hover:text-white transition flex items-center gap-2 group">
+                <span class="text-neon-500 group-hover:-translate-x-1 transition-transform"><-</span>
+                Back to Terminal
             </a>
-            <div class="text-sm font-bold text-white tracking-tight font-mono opacity-50">
-                /projects/<span id="nav-title">loading...</span>
-            </div>
         </div>
     </nav>
 
-    <main class="max-w-5xl mx-auto px-6 py-12 flex-grow w-full">
+    <main class="max-w-4xl mx-auto px-6 py-12 flex-grow w-full">
         
-        <div id="loading" class="text-center py-20">
-            <div class="inline-block w-8 h-8 border-2 border-slate-700 border-t-accent-500 rounded-full animate-spin"></div>
-            <p class="mt-4 text-slate-500 font-mono text-xs">Fetching Data...</p>
+        <div id="loading" class="text-center py-20 font-mono text-neon-500 animate-pulse">
+            > Fetching project data...
         </div>
 
-        <div id="project-content" class="hidden opacity-0 transition-opacity duration-700">
+        <div id="project-content" class="hidden opacity-0 transition-opacity duration-500">
             
-            <header class="mb-12 border-b border-white/5 pb-12">
-                <div class="flex flex-wrap gap-2 mb-6" id="tags-container"></div>
-                <h1 id="p-title" class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight"></h1>
-                <p id="p-desc" class="text-xl text-slate-400 leading-relaxed max-w-3xl"></p>
-            </header>
+            <div class="mb-12">
+                <div class="flex flex-wrap gap-2 mb-4" id="tags-container"></div>
+                <h1 id="p-title" class="text-4xl md:text-5xl font-bold text-white mb-6"></h1>
+                <p id="p-desc" class="text-xl text-gray-400 font-light"></p>
+            </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div class="w-full h-64 md:h-96 bg-dark-card border border-dark-border rounded-lg mb-12 flex items-center justify-center overflow-hidden">
+                <img id="p-image" src="" class="w-full h-full object-cover opacity-80 hover:opacity-100 transition duration-700" alt="Workflow Visualization">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-dark-border pt-12">
                 
-                <div class="lg:col-span-4 space-y-6 order-2 lg:order-1">
-                    <div class="glass-panel p-6 rounded-xl">
-                        <h3 class="text-white font-semibold mb-4 text-xs font-mono uppercase tracking-wider text-slate-500">Classification</h3>
-                        <p id="p-type" class="text-white font-medium"></p>
+                <div class="md:col-span-1 space-y-8">
+                    <div>
+                        <h3 class="text-white font-bold mb-2 text-sm font-mono uppercase">Project Type</h3>
+                        <p id="p-type" class="text-neon-400"></p>
                     </div>
 
-                    <div class="glass-panel p-6 rounded-xl">
-                        <h3 class="text-white font-semibold mb-4 text-xs font-mono uppercase tracking-wider text-slate-500">Tech Stack</h3>
-                        <ul id="tech-list" class="space-y-3 text-sm font-mono text-slate-300"></ul>
+                    <div>
+                        <h3 class="text-white font-bold mb-2 text-sm font-mono uppercase">Stack Used</h3>
+                        <ul id="tech-list" class="space-y-2 text-sm text-gray-400 font-mono"></ul>
                     </div>
                 </div>
 
-                <div class="lg:col-span-8 space-y-12 order-1 lg:order-2">
-                    <div class="glass-panel p-1 rounded-xl mb-8 overflow-hidden shadow-2xl">
-                        <img id="p-image" src="" alt="Project Screenshot" class="w-full h-auto rounded-lg opacity-90 hover:opacity-100 transition duration-500">
-                    </div>
-
+                <div class="md:col-span-2 space-y-10">
                     <section>
-                        <h2 class="text-xl text-white font-bold mb-4 flex items-center gap-3">
-                            <span class="text-accent-500 font-mono">01.</span> The Challenge
+                        <h2 class="text-xl text-white font-bold mb-3 flex items-center gap-2">
+                            <span class="text-red-500 font-mono">01.</span> The Problem
                         </h2>
-                        <p id="p-problem" class="text-slate-400 leading-relaxed"></p>
+                        <p id="p-problem" class="text-gray-400 leading-relaxed"></p>
                     </section>
 
                     <section>
-                        <h2 class="text-xl text-white font-bold mb-4 flex items-center gap-3">
-                            <span class="text-accent-500 font-mono">02.</span> The Solution
+                        <h2 class="text-xl text-white font-bold mb-3 flex items-center gap-2">
+                            <span class="text-neon-500 font-mono">02.</span> My Solution
                         </h2>
-                        <div class="relative pl-6 border-l border-accent-500/30">
-                            <p id="p-solution" class="text-slate-300 leading-relaxed"></p>
+                        <div class="pl-4 border-l-2 border-neon-900">
+                            <p id="p-solution" class="text-gray-300 leading-relaxed"></p>
                         </div>
                     </section>
 
-                    <section>
-                        <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-white/5 p-8 rounded-xl relative overflow-hidden group">
-                            <div class="absolute top-0 right-0 w-32 h-32 bg-accent-500/10 rounded-full blur-2xl -mr-16 -mt-16 group-hover:bg-accent-500/20 transition duration-500"></div>
-                            <h2 class="text-accent-400 font-bold mb-3 text-sm font-mono uppercase tracking-wide">Result & Impact</h2>
-                            <p id="p-result" class="text-white font-medium text-lg leading-relaxed relative z-10"></p>
-                        </div>
+                    <section class="bg-dark-card border border-dark-border p-6 rounded-lg">
+                        <h2 class="text-white font-bold mb-2 font-mono uppercase text-sm text-neon-500">
+                            > Outcome
+                        </h2>
+                        <p id="p-result" class="text-white text-lg font-medium"></p>
                     </section>
                 </div>
             </div>
-            
-            <div class="mt-20 pt-10 border-t border-white/5 flex justify-between items-center">
-                 <a href="index.html" class="text-sm font-mono text-slate-500 hover:text-white transition">
-                    &lt; ~/root
-                </a>
-                <a href="mailto:priyo@example.com" class="bg-white text-black hover:bg-slate-200 px-6 py-2 rounded font-medium text-sm transition-colors">
-                    Hire Me for This
+
+            <div class="mt-24 text-center">
+                <h3 class="text-white font-bold text-2xl mb-6">Need a system like this?</h3>
+                <a href="mailto:your-email@gmail.com" class="inline-block bg-neon-600 hover:bg-neon-500 text-black font-bold px-8 py-4 rounded transition-all hover:scale-105">
+                    Start Conversation
                 </a>
             </div>
         </div>
     </main>
+
+    <footer class="text-center py-8 text-gray-700 text-sm border-t border-dark-border mt-12">
+        &copy; 2026 Priyo Das.
+    </footer>
 
     <script>
         async function loadProjectDetails() {
             const urlParams = new URLSearchParams(window.location.search);
             const projectId = urlParams.get('id');
 
-            if (!projectId) {
-                window.location.href = 'index.html';
-                return;
-            }
+            if (!projectId) { window.location.href = 'index.html'; return; }
 
             try {
                 const response = await fetch('projects.json');
@@ -139,12 +125,10 @@
                 const project = projects.find(p => p.id === projectId);
 
                 if (!project) {
-                    document.getElementById('loading').innerHTML = "Error: Project 404";
+                    document.getElementById('loading').innerHTML = "Project Not Found";
                     return;
                 }
 
-                // Populate Data
-                document.getElementById('nav-title').innerText = project.id; // Nice touch for the nav
                 document.getElementById('p-title').innerText = project.title;
                 document.getElementById('p-desc').innerText = project.description;
                 document.getElementById('p-type').innerText = project.type;
@@ -156,29 +140,23 @@
 
                 const tagsContainer = document.getElementById('tags-container');
                 project.tags.forEach(tag => {
-                    tagsContainer.innerHTML += `<span class="text-[10px] font-bold uppercase tracking-wider text-accent-400 bg-accent-900/10 border border-accent-500/20 px-2 py-1 rounded">${tag}</span>`;
+                    tagsContainer.innerHTML += `<span class="text-xs font-mono text-neon-500 border border-neon-900 bg-neon-900/10 px-2 py-1 rounded">${tag}</span>`;
                 });
 
                 const techList = document.getElementById('tech-list');
                 project.full_details.tech_stack.forEach(tech => {
-                    techList.innerHTML += `
-                        <li class="flex items-center gap-3">
-                            <span class="text-accent-500">></span>
-                            ${tech}
-                        </li>`;
+                    techList.innerHTML += `<li>> ${tech}</li>`;
                 });
 
                 document.getElementById('loading').classList.add('hidden');
                 const content = document.getElementById('project-content');
                 content.classList.remove('hidden');
-                setTimeout(() => { content.classList.remove('opacity-0'); }, 50);
+                setTimeout(() => content.classList.remove('opacity-0'), 50);
 
             } catch (error) {
                 console.error(error);
-                document.getElementById('loading').innerText = "System Error: Could not retrieve data.";
             }
         }
-
         loadProjectDetails();
     </script>
 </body>
