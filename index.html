@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Priyo | n8n Automation Specialist</title>
+    <title>Priyo | Automation & Security</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
@@ -16,16 +16,37 @@
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        brand: { 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' }, // Trustworthy Blue
-                        slate: { 850: '#1e293b', 900: '#0f172a', 950: '#020617' }
+                        // "Kali" Purple & "Trust" Blue Hybrid
+                        accent: { 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7' }, 
+                        term: { 
+                            bg: '#0c0c0c',
+                            header: '#1f2937',
+                            green: '#4ade80',
+                            blue: '#60a5fa'
+                        }
+                    },
+                    backgroundImage: {
+                        'grid-pattern': "linear-gradient(to right, #1e293b 1px, transparent 1px), linear-gradient(to bottom, #1e293b 1px, transparent 1px)",
                     },
                     animation: {
                         'fade-in': 'fadeIn 0.6s ease-out forwards',
+                        'cursor': 'cursor .75s step-end infinite',
+                        'blob': 'blob 7s infinite',
                     },
                     keyframes: {
                         fadeIn: {
                             '0%': { opacity: '0', transform: 'translateY(10px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        cursor: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
                         }
                     }
                 }
@@ -34,105 +55,167 @@
     </script>
     <style>
         body {
-            background-color: #0f172a;
-            /* Subtle, professional mesh gradient */
-            background-image: 
-                radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, rgba(30, 58, 138, 0.15) 0px, transparent 50%);
-            background-attachment: fixed;
+            background-color: #020617;
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, transparent 70%);
+        }
+        .tech-grid {
+            background-size: 40px 40px;
+            mask-image: linear-gradient(to bottom, transparent, 10%, black, 90%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, 5%, black, 95%, transparent);
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            opacity: 0.1;
         }
         .glass-panel {
-            background: rgba(30, 41, 59, 0.4); /* Lighter, cleaner glass */
+            background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
+        .glow-hover:hover {
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
-<body class="text-slate-300 font-sans antialiased selection:bg-brand-500/30 selection:text-white">
+<body class="text-slate-300 font-sans antialiased selection:bg-accent-500/30 selection:text-white relative overflow-x-hidden">
 
-    <nav class="fixed top-0 w-full z-50 border-b border-white/5 glass-panel backdrop-blur-md">
-        <div class="max-w-6xl mx-auto px-6 h-20 flex justify-between items-center">
-            <div class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                <div class="w-2 h-2 bg-brand-500 rounded-full animate-pulse"></div>
-                Priyo<span class="text-slate-500 font-normal">.Automates</span>
+    <div class="tech-grid bg-grid-pattern h-screen w-full fixed"></div>
+
+    <div class="fixed top-0 -left-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
+    <div class="fixed top-0 -right-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
+
+    <nav class="fixed top-0 w-full z-50 border-b border-white/5 glass-panel">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
+            <div class="text-lg font-bold text-white tracking-tight flex items-center gap-2 font-mono">
+                <span class="text-accent-400">./</span>Priyo<span class="text-slate-600">_Automates</span>
             </div>
-            <a href="mailto:your-email@gmail.com" class="text-sm font-medium text-white bg-brand-600 hover:bg-brand-500 px-5 py-2.5 rounded-lg transition-all shadow-lg shadow-brand-900/20">
-                Work With Me
-            </a>
+            
+            <div class="flex items-center gap-6">
+                <div class="hidden md:flex items-center gap-2 text-xs font-mono text-emerald-400 bg-emerald-950/30 px-3 py-1 rounded-full border border-emerald-900">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    SYSTEM ONLINE
+                </div>
+
+                <button onclick="copyEmail()" class="text-xs font-medium text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-accent-500/50 px-4 py-2 rounded-lg transition-all flex items-center gap-2 group">
+                    <span id="email-text">priyo@example.com</span>
+                    <svg class="w-3 h-3 text-slate-400 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                    </svg>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <header class="max-w-6xl mx-auto px-6 pt-32 pb-20 md:pt-48 animate-fade-in">
-        <h1 class="text-4xl md:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">
-            I turn your manual work into <br>
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">reliable background systems.</span>
-        </h1>
-        <p class="text-lg md:text-xl max-w-2xl text-slate-400 mb-10 leading-relaxed">
-            Specializing in <strong>n8n automation</strong> and <strong>API integration</strong>. 
-            I help businesses reclaim 20+ hours a week by automating workflows, fixing broken processes, and connecting tools that "don't talk to each other."
-        </p>
-        
-        <div class="flex items-center gap-6 text-sm font-medium text-slate-500">
-            <span class="flex items-center gap-2"><svg class="w-4 h-4 text-brand-500" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg> 100% Success Rate</span>
-            <span class="flex items-center gap-2"><svg class="w-4 h-4 text-brand-500" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg> Fast Turnaround</span>
+    <header class="max-w-6xl mx-auto px-6 pt-32 pb-20 md:pt-40 grid md:grid-cols-2 gap-12 items-center animate-fade-in">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/20 border border-blue-500/20 text-blue-400 text-xs font-mono mb-6">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                Automating the boring stuff
+            </div>
+            
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
+                I build digital<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 to-indigo-500">workers for you.</span>
+            </h1>
+            
+            <p class="text-lg text-slate-400 mb-8 leading-relaxed max-w-lg">
+                I specialize in <strong>n8n workflows</strong> and <strong>Reverse Engineering</strong>. 
+                I don't just connect apps; I break down barriers to get data moving where it shouldn't.
+            </p>
+            
+            <div class="flex gap-4">
+                <a href="#projects" class="bg-accent-600 hover:bg-accent-500 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-lg shadow-accent-900/20 hover:shadow-accent-900/40">
+                    View Protocols
+                </a>
+                <a href="https://github.com" target="_blank" class="px-6 py-3 rounded-lg font-medium text-slate-300 hover:text-white transition-colors flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    GitHub
+                </a>
+            </div>
+        </div>
+
+        <div class="relative group">
+            <div class="absolute -inset-1 bg-gradient-to-r from-accent-600 to-purple-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+            <div class="relative rounded-lg bg-[#0c0c0c] border border-slate-800 font-mono text-sm shadow-2xl overflow-hidden">
+                <div class="bg-slate-800/50 px-4 py-2 flex items-center gap-2 border-b border-slate-800">
+                    <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                    <span class="ml-2 text-xs text-slate-500">priyo@kali-wsl:~</span>
+                </div>
+                <div class="p-6 space-y-4 h-80 overflow-y-auto text-slate-300">
+                    <div>
+                        <span class="text-term-green">priyo@kali:~$</span> cat whoami.txt
+                    </div>
+                    <div class="pl-4 text-slate-400">
+                        > 19 y/o based in West Bengal.<br>
+                        > Obsessed with efficiency.<br>
+                        > If you do it twice, I automate it once.
+                    </div>
+
+                    <div>
+                        <span class="text-term-green">priyo@kali:~$</span> ls ./skills
+                    </div>
+                    <div class="pl-4 grid grid-cols-2 gap-x-4 text-term-blue">
+                        <span>n8n_workflows.yml</span>
+                        <span>python_scripts.py</span>
+                        <span>api_reverse_eng.sh</span>
+                        <span>linux_admin.bin</span>
+                        <span>web_scraping.js</span>
+                    </div>
+
+                    <div>
+                        <span class="text-term-green">priyo@kali:~$</span> ./run_optimization.sh
+                        <span class="animate-cursor inline-block w-2 h-4 align-middle bg-slate-500 ml-1"></span>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
-    <section class="max-w-6xl mx-auto px-6 pb-20">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="glass-panel p-6 rounded-xl hover:border-brand-500/30 transition duration-300">
-                <div class="w-10 h-10 bg-blue-900/30 rounded-lg flex items-center justify-center mb-4 text-blue-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <h3 class="text-white font-semibold mb-2">n8n Workflow Design</h3>
-                <p class="text-slate-400 text-sm leading-relaxed">
-                    Full automation builds from scratch. Whether you need a simple data sync or a complex system with a custom dashboard/frontend.
-                </p>
+    <section id="projects" class="max-w-6xl mx-auto px-6 py-20">
+        <div class="flex justify-between items-end mb-12">
+            <div>
+                <h2 class="text-3xl text-white font-bold mb-2">Deployed Systems</h2>
+                <p class="text-slate-500">Select a case study to view the architecture.</p>
             </div>
-
-            <div class="glass-panel p-6 rounded-xl hover:border-brand-500/30 transition duration-300">
-                <div class="w-10 h-10 bg-blue-900/30 rounded-lg flex items-center justify-center mb-4 text-blue-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 00-6.485-6.064 2.535 2.535 0 01.105 5.753z" />
-                    </svg>
-                </div>
-                <h3 class="text-white font-semibold mb-2">Workflow Repair</h3>
-                <p class="text-slate-400 text-sm leading-relaxed">
-                    Have a workflow that keeps failing? I debug errors, optimize logic, and fix broken nodes to get your system running smoothly again.
-                </p>
-            </div>
-
-            <div class="glass-panel p-6 rounded-xl hover:border-brand-500/30 transition duration-300">
-                <div class="w-10 h-10 bg-blue-900/30 rounded-lg flex items-center justify-center mb-4 text-blue-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
-                    </svg>
-                </div>
-                <h3 class="text-white font-semibold mb-2">API Reverse Engineering</h3>
-                <p class="text-slate-400 text-sm leading-relaxed">
-                    Need data from a site without a public API? I reverse engineer website endpoints to securely fetch the data you need.
-                </p>
-            </div>
+        </div>
+        
+        <div id="project-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="glass-panel h-80 rounded-xl animate-pulse bg-slate-800/50"></div>
+            <div class="glass-panel h-80 rounded-xl animate-pulse bg-slate-800/50 hidden md:block"></div>
         </div>
     </section>
 
-    <main class="max-w-6xl mx-auto px-6 py-12">
-        <h2 class="text-2xl text-white font-bold mb-8">Selected Case Studies</h2>
-        
-        <div id="project-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="glass-panel h-64 rounded-xl animate-pulse"></div>
-            <div class="glass-panel h-64 rounded-xl animate-pulse hidden md:block"></div>
-        </div>
-    </main>
-
-    <footer class="text-center py-12 text-slate-500 text-sm border-t border-slate-800/50 mt-12">
-        <p>&copy; 2026 Priyo D. Focused on results, not just code.</p>
+    <footer class="text-center py-12 text-slate-600 text-sm border-t border-slate-800/50 mt-12 bg-[#020617]">
+        <p class="font-mono">
+            &copy; 2026 Priyo D. <span class="mx-2 text-slate-800">|</span> 
+            <span class="text-slate-500">System Status: Optimal</span>
+        </p>
     </footer>
 
     <script>
-        setTimeout(loadProjects, 300);
+        // Simple clipboard copy function
+        function copyEmail() {
+            const email = "priyo@example.com"; // Replace with your actual email
+            navigator.clipboard.writeText(email);
+            const btn = document.getElementById('email-text');
+            const original = btn.innerText;
+            btn.innerText = "Copied!";
+            setTimeout(() => { btn.innerText = original; }, 2000);
+        }
+
+        setTimeout(loadProjects, 500);
 
         async function loadProjects() {
             try {
@@ -143,44 +226,43 @@
                 grid.innerHTML = ''; 
 
                 projects.forEach((project, index) => {
-                    // Logic to highlight "Client Work" vs "Internal Tool"
                     const isClientWork = project.type === "Client Project";
-                    const badgeColor = isClientWork ? 'bg-brand-500/10 text-brand-400 border-brand-500/20' : 'bg-slate-700/30 text-slate-400 border-slate-600/30';
+                    const badgeClass = isClientWork 
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                        : 'bg-purple-500/10 text-purple-400 border-purple-500/20';
 
                     const card = `
-                        <div class="group glass-panel p-6 rounded-xl relative hover:-translate-y-1 transition duration-300 hover:shadow-xl hover:shadow-brand-900/10 animate-fade-in" style="animation-delay: ${index * 100}ms">
+                        <div class="group glass-panel p-8 rounded-xl relative hover:-translate-y-2 transition duration-500 glow-hover animate-fade-in flex flex-col h-full" style="animation-delay: ${index * 150}ms">
                             
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="${badgeColor} text-[10px] font-bold uppercase tracking-wide px-3 py-1 rounded-full border">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="${badgeClass} text-[10px] font-bold font-mono uppercase tracking-wider px-3 py-1 rounded border">
                                     ${project.type}
                                 </div>
+                                <svg class="w-5 h-5 text-slate-600 group-hover:text-accent-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
                             </div>
 
-                            <h3 class="text-xl text-white font-bold mb-3 group-hover:text-brand-400 transition-colors">
+                            <h3 class="text-2xl text-white font-bold mb-3 group-hover:text-accent-400 transition-colors">
                                 ${project.title}
                             </h3>
                            
-                            <p class="text-slate-400 text-sm mb-6 leading-relaxed line-clamp-3">
+                            <p class="text-slate-400 text-sm mb-6 leading-relaxed flex-grow">
                                 ${project.description}
                             </p>
                             
-                            <div class="flex flex-wrap gap-2 mb-6">
-                                ${project.tags.map(tag => `<span class="text-xs text-slate-500 bg-slate-900/50 px-2 py-1 rounded border border-slate-800">${tag}</span>`).join('')}
+                            <div class="flex flex-wrap gap-2 mt-auto pt-6 border-t border-white/5">
+                                ${project.tags.map(tag => `<span class="text-xs text-slate-500 font-mono bg-black/30 px-2 py-1 rounded border border-slate-800/50 group-hover:border-accent-500/20 transition-colors">${tag}</span>`).join('')}
                             </div>
 
-                            <a href="project.html?id=${project.id}" class="inline-flex items-center text-sm font-medium text-white hover:text-brand-400 transition-colors">
-                                Read Case Study 
-                                <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                </svg>
-                            </a>
+                            <a href="project.html?id=${project.id}" class="absolute inset-0 z-10"></a>
                         </div>
                     `;
                     grid.innerHTML += card;
                 });
             } catch (error) {
                 console.error(error);
-                grid.innerHTML = '<p class="text-red-400">Unable to load projects.</p>';
+                grid.innerHTML = '<div class="text-red-400 font-mono border border-red-900/50 bg-red-900/10 p-4 rounded">Error: Data fetch failed. Check JSON path.</div>';
             }
         }
     </script>
