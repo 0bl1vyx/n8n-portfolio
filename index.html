@@ -16,18 +16,9 @@
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        // "Matrix/Hacker" Green but sophisticated
+                        // High-End Emerald Green
                         accent: { 400: '#4ade80', 500: '#22c55e', 600: '#16a34a', glow: 'rgba(74, 222, 128, 0.5)' },
-                        bg: { main: '#050505', card: '#0a0a0a', border: '#222222' }
-                    },
-                    animation: {
-                        'scroll': 'scroll 40s linear infinite',
-                    },
-                    keyframes: {
-                        scroll: {
-                            '0%': { transform: 'translateX(0)' },
-                            '100%': { transform: 'translateX(-50%)' },
-                        }
+                        bg: { main: '#020202', card: '#09090b', border: '#27272a' }
                     }
                 }
             }
@@ -35,68 +26,61 @@
     </script>
     <style>
         body { 
-            background-color: #050505; 
+            background-color: #020202; 
             color: #e5e5e5; 
-            cursor: none; /* Hide default cursor */
+            cursor: none; /* Custom cursor only */
+            overflow-x: hidden;
         }
         
-        /* CANVAS BACKGROUND */
+        /* CANVAS LAYER */
         #canvas-bg {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             z-index: -1;
-            pointer-events: none;
+            /* Vignette Effect to darken corners */
+            background: radial-gradient(circle at center, transparent 0%, #020202 100%);
         }
 
-        /* CUSTOM CURSOR */
-        .cursor-dot,
-        .cursor-outline {
-            position: fixed;
-            top: 0;
-            left: 0;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            z-index: 9999;
-            pointer-events: none;
-        }
+        /* MAGNETIC CURSOR */
         .cursor-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #4ade80;
+            width: 6px; height: 6px; background-color: #4ade80;
+            position: fixed; top: 0; left: 0; transform: translate(-50%, -50%);
+            border-radius: 50%; z-index: 9999; pointer-events: none;
         }
         .cursor-outline {
-            width: 40px;
-            height: 40px;
-            border: 1px solid rgba(74, 222, 128, 0.5);
+            width: 30px; height: 30px; border: 1px solid rgba(74, 222, 128, 0.3);
+            position: fixed; top: 0; left: 0; transform: translate(-50%, -50%);
+            border-radius: 50%; z-index: 9998; pointer-events: none;
             transition: width 0.2s, height 0.2s, background-color 0.2s;
         }
-        /* Hover Effect for Links */
-        body:has(a:hover) .cursor-outline,
-        body:has(button:hover) .cursor-outline {
-            width: 60px;
-            height: 60px;
+        
+        /* Hover State for Cursor */
+        body.hovering .cursor-outline {
+            width: 50px; height: 50px;
             background-color: rgba(74, 222, 128, 0.1);
             border-color: #4ade80;
         }
 
-        /* Scrollbar hiding */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
+        /* GLASS CARDS - Optimized Blur */
         .glass-card {
-            background: rgba(10, 10, 10, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid #222;
+            background: rgba(9, 9, 11, 0.6);
+            backdrop-filter: blur(8px); /* Reduced blur for performance */
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid #27272a;
             transition: all 0.3s ease;
         }
         .glass-card:hover {
             border-color: #22c55e;
-            box-shadow: 0 0 30px -10px rgba(34, 197, 94, 0.15);
-            transform: translateY(-4px);
+            box-shadow: 0 0 25px -5px rgba(34, 197, 94, 0.15);
+            transform: translateY(-3px);
         }
+
+        /* UTILS */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="antialiased selection:bg-accent-500/30 selection:text-white relative">
@@ -111,7 +95,7 @@
             <div class="text-sm font-bold tracking-tight flex items-center gap-2">
                 <span class="text-accent-500 font-mono">./</span> PRIYO DAS
             </div>
-            <a href="mailto:priyodas567@gmail.com" class="text-xs font-semibold bg-white text-black hover:bg-gray-200 px-5 py-2.5 rounded-full transition-colors cursor-pointer">
+            <a href="mailto:priyodas567@gmail.com" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="text-xs font-semibold bg-white text-black hover:bg-gray-200 px-5 py-2.5 rounded-full transition-colors cursor-pointer">
                 Hire Me
             </a>
         </div>
@@ -123,7 +107,7 @@
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2 w-2 bg-accent-500"></span>
             </span>
-            <span class="text-xs font-mono text-gray-400">Accepting New Clients &bull; 2026</span>
+            <span class="text-xs font-mono text-gray-400">Accepting Clients &bull; 2026</span>
         </div>
 
         <h1 class="text-5xl md:text-8xl font-bold text-white mb-8 tracking-tight leading-tight">
@@ -133,15 +117,15 @@
         
         <p class="text-lg md:text-xl text-gray-400 mb-10 leading-relaxed max-w-2xl mx-auto font-light">
             I engineer custom <span class="text-white font-medium">automation systems</span> that run on your own private server.
-            No expensive monthly subscriptions. No data leaks.
+            No subscriptions. No data leaks.
         </p>
         
         <div class="flex flex-col md:flex-row justify-center gap-4">
-            <a href="#work" class="px-8 py-4 bg-accent-600 hover:bg-accent-500 text-white font-bold rounded-lg transition-all shadow-[0_0_20px_-5px_#10b981] flex items-center justify-center gap-2">
+            <a href="#work" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="px-8 py-4 bg-accent-600 hover:bg-accent-500 text-white font-bold rounded-lg transition-all shadow-[0_0_20px_-5px_#10b981] flex items-center justify-center gap-2">
                 See It In Action 
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
             </a>
-            <a href="https://www.linkedin.com/in/0bl1vyx/" target="_blank" class="px-8 py-4 border border-bg-border hover:border-[#0077b5] hover:text-white text-gray-300 font-medium rounded-lg transition-all flex items-center justify-center gap-2 group bg-bg-card/50">
+            <a href="https://www.linkedin.com/in/0bl1vyx/" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="px-8 py-4 border border-bg-border hover:border-[#0077b5] hover:text-white text-gray-300 font-medium rounded-lg transition-all flex items-center justify-center gap-2 group bg-bg-card/50">
                 <svg class="w-5 h-5 group-hover:text-[#0077b5] transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
                 LinkedIn
             </a>
@@ -151,11 +135,10 @@
     <div class="border-y border-bg-border bg-bg-card/30 overflow-hidden relative backdrop-blur-sm z-10">
         <div class="max-w-6xl mx-auto px-6 py-8">
             <p class="text-center text-xs font-mono text-gray-500 mb-6 uppercase tracking-widest">Powering automations with</p>
-            
-            <div class="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-bg-main to-transparent z-20"></div>
-            <div class="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-bg-main to-transparent z-20"></div>
+            <div class="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-bg-main to-transparent z-20"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-bg-main to-transparent z-20"></div>
 
-            <div class="flex overflow-x-auto no-scrollbar md:justify-center gap-12 pb-2 md:pb-0 items-center opacity-60">
+            <div class="flex overflow-x-auto no-scrollbar md:justify-center gap-12 pb-2 md:pb-0 items-center opacity-70">
                 <span class="text-sm md:text-lg font-bold text-white flex-shrink-0 flex items-center gap-2">⚡ n8n</span>
                 <span class="text-sm md:text-lg font-bold text-white flex-shrink-0 flex items-center gap-2">🤖 OpenAI</span>
                 <span class="text-sm md:text-lg font-bold text-white flex-shrink-0 flex items-center gap-2">💎 Gemini</span>
@@ -164,38 +147,37 @@
                 <span class="text-sm md:text-lg font-bold text-white flex-shrink-0 flex items-center gap-2">🕷️ Puppeteer</span>
                 <span class="text-sm md:text-lg font-bold text-white flex-shrink-0 flex items-center gap-2">🔌 API</span>
                 <span class="text-sm md:text-lg font-bold text-white flex-shrink-0 flex items-center gap-2">📄 JSON</span>
-                <span class="text-sm md:text-lg font-bold text-white flex-shrink-0 flex items-center gap-2">🎣 Webhooks</span>
             </div>
         </div>
     </div>
 
     <section class="max-w-6xl mx-auto px-6 py-24 relative z-10">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="glass-card p-8 rounded-2xl">
+            <div class="glass-card p-8 rounded-2xl" onmouseenter="cursorHover()" onmouseleave="cursorLeave()">
                 <div class="w-12 h-12 bg-accent-500/10 rounded-lg flex items-center justify-center mb-6 text-accent-500">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
                 </div>
                 <h3 class="text-white font-bold text-xl mb-3">Complex Logic</h3>
                 <p class="text-gray-400 text-sm leading-relaxed">
-                    I don't just zap data. I build logic-heavy workflows with error handling, retries, and data formatting.
+                    Logic-heavy workflows with error handling, retries, and data formatting.
                 </p>
             </div>
-            <div class="glass-card p-8 rounded-2xl">
+            <div class="glass-card p-8 rounded-2xl" onmouseenter="cursorHover()" onmouseleave="cursorLeave()">
                 <div class="w-12 h-12 bg-accent-500/10 rounded-lg flex items-center justify-center mb-6 text-accent-500">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
                 <h3 class="text-white font-bold text-xl mb-3">Scale Ready</h3>
                 <p class="text-gray-400 text-sm leading-relaxed">
-                    Systems designed to handle thousands of executions. Built on robust self-hosted or cloud n8n.
+                    Systems designed to handle thousands of executions. Built on robust self-hosted n8n.
                 </p>
             </div>
-            <div class="glass-card p-8 rounded-2xl">
+            <div class="glass-card p-8 rounded-2xl" onmouseenter="cursorHover()" onmouseleave="cursorLeave()">
                 <div class="w-12 h-12 bg-accent-500/10 rounded-lg flex items-center justify-center mb-6 text-accent-500">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                 </div>
                 <h3 class="text-white font-bold text-xl mb-3">Security First</h3>
                 <p class="text-gray-400 text-sm leading-relaxed">
-                    Your data stays safe. I use secure API authentication, environment variables, and ethical scraping.
+                    Secure API authentication, environment variables, and ethical scraping practices.
                 </p>
             </div>
         </div>
@@ -218,13 +200,13 @@
                 <p class="text-gray-500 text-sm">Automation Specialist & Developer</p>
             </div>
             <div class="flex flex-col md:flex-row gap-4 md:gap-8 text-center">
-                <a href="mailto:priyodas567@gmail.com" class="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-2 justify-center">
+                <a href="mailto:priyodas567@gmail.com" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-2 justify-center">
                     ✉️ priyodas567@gmail.com
                 </a>
-                <a href="https://www.linkedin.com/in/0bl1vyx/" target="_blank" class="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-2 justify-center">
+                <a href="https://www.linkedin.com/in/0bl1vyx/" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-2 justify-center">
                     🔗 LinkedIn
                 </a>
-                <a href="https://github.com/0bl1vyx" target="_blank" class="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-2 justify-center">
+                <a href="https://github.com/0bl1vyx" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-2 justify-center">
                     💻 GitHub
                 </a>
             </div>
@@ -232,56 +214,90 @@
     </footer>
 
     <script>
-        // --- CUSTOM CURSOR LOGIC ---
+        // --- CURSOR LOGIC ---
         const cursorDot = document.querySelector('.cursor-dot');
         const cursorOutline = document.querySelector('.cursor-outline');
 
         window.addEventListener('mousemove', (e) => {
-            const posX = e.clientX;
-            const posY = e.clientY;
-
-            // Dot follows instantly
-            cursorDot.style.left = `${posX}px`;
-            cursorDot.style.top = `${posY}px`;
-
-            // Outline follows with slight delay (animation in CSS)
+            cursorDot.style.left = `${e.clientX}px`;
+            cursorDot.style.top = `${e.clientY}px`;
+            
             cursorOutline.animate({
-                left: `${posX}px`,
-                top: `${posY}px`
-            }, { duration: 500, fill: "forwards" });
+                left: `${e.clientX}px`,
+                top: `${e.clientY}px`
+            }, { duration: 400, fill: "forwards" });
         });
 
-        // --- BACKGROUND PARTICLES LOGIC ---
+        function cursorHover() { document.body.classList.add('hovering'); }
+        function cursorLeave() { document.body.classList.remove('hovering'); }
+
+        // --- OPTIMIZED CANVAS BACKGROUND ---
         const canvas = document.getElementById('canvas-bg');
         const ctx = canvas.getContext('2d');
+        
         let particles = [];
+        let mouse = { x: null, y: null };
 
+        // Handle Resize
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            initParticles();
         }
         window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
 
         class Particle {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
+                // Random speed but very slow for "floating" feel
+                this.vx = (Math.random() - 0.5) * 0.5; 
+                this.vy = (Math.random() - 0.5) * 0.5;
                 this.size = Math.random() * 2;
-                this.speedX = Math.random() * 1 - 0.5; // Slow movement
-                this.speedY = Math.random() * 1 - 0.5;
-                this.opacity = Math.random() * 0.5 + 0.1; // Varied opacity
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.density = (Math.random() * 30) + 1;
             }
+
             update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.x > canvas.width) this.x = 0;
-                if (this.x < 0) this.x = canvas.width;
-                if (this.y > canvas.height) this.y = 0;
-                if (this.y < 0) this.y = canvas.height;
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Mouse Interaction (Push/Pull effect)
+                if (mouse.x != null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    const forceDirectionX = dx / distance;
+                    const forceDirectionY = dy / distance;
+                    const maxDistance = 150;
+                    
+                    if (distance < maxDistance) {
+                        const force = (maxDistance - distance) / maxDistance;
+                        const directionX = forceDirectionX * force * this.density * 0.6;
+                        const directionY = forceDirectionY * force * this.density * 0.6;
+                        
+                        // Move away slightly for "magnetic" feel
+                        this.x -= directionX;
+                        this.y -= directionY;
+                    }
+                }
+
+                // Screen Wrap
+                if (this.x > canvas.width || this.x < 0) this.vx = -this.vx;
+                if (this.y > canvas.height || this.y < 0) this.vy = -this.vy;
             }
+
             draw() {
-                ctx.fillStyle = `rgba(74, 222, 128, ${this.opacity})`; // Green
+                ctx.fillStyle = 'rgba(74, 222, 128, 0.5)';
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
@@ -290,44 +306,66 @@
 
         function initParticles() {
             particles = [];
-            // Create particles based on screen size
-            const particleCount = (canvas.width * canvas.height) / 15000;
+            // OPTIMIZATION: Less particles on mobile
+            let particleCount = (canvas.width * canvas.height) / 20000;
+            if (window.innerWidth < 768) particleCount = 40; // Cap mobile particles
+            
             for (let i = 0; i < particleCount; i++) {
                 particles.push(new Particle());
             }
         }
 
-        function animateParticles() {
+        function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
             for (let i = 0; i < particles.length; i++) {
                 particles[i].update();
                 particles[i].draw();
-                
-                // Draw lines between close particles
+
+                // Draw Connections
+                // OPTIMIZATION: Limit loop range to nearby particles in array index (heuristic)
+                // But standard double loop is fine for < 100 particles
                 for (let j = i; j < particles.length; j++) {
                     const dx = particles[i].x - particles[j].x;
                     const dy = particles[i].y - particles[j].y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance < 100) {
+
+                    // Connection Distance
+                    if (distance < 120) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(74, 222, 128, ${0.1 - distance/1000})`; // Faint Green Lines
-                        ctx.lineWidth = 0.5;
+                        // Opacity based on distance
+                        let opacity = 1 - (distance / 120);
+                        ctx.strokeStyle = `rgba(74, 222, 128, ${opacity * 0.2})`; 
+                        ctx.lineWidth = 1;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
                         ctx.stroke();
                     }
                 }
+
+                // Connect to mouse if close
+                if (mouse.x != null) {
+                    const dx = particles[i].x - mouse.x;
+                    const dy = particles[i].y - mouse.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 150) {
+                        ctx.beginPath();
+                        let opacity = 1 - (distance / 150);
+                        ctx.strokeStyle = `rgba(74, 222, 128, ${opacity * 0.4})`;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(mouse.x, mouse.y);
+                        ctx.stroke();
+                    }
+                }
             }
-            requestAnimationFrame(animateParticles);
+            requestAnimationFrame(animate);
         }
 
-        initParticles();
-        animateParticles();
+        resizeCanvas();
+        animate();
 
-        // --- PROJECT LOADER ---
+        // --- PROJECT LOADER (Same as before) ---
         setTimeout(loadProjects, 100);
-
         async function loadProjects() {
             try {
                 const response = await fetch('projects.json');
@@ -337,7 +375,7 @@
 
                 projects.forEach((project) => {
                     const card = `
-                        <a href="project.html?id=${project.id}" class="glass-card p-6 rounded-2xl flex flex-col h-full group relative overflow-hidden">
+                        <a href="project.html?id=${project.id}" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="glass-card p-6 rounded-2xl flex flex-col h-full group relative overflow-hidden">
                             <div class="mb-4 flex justify-between items-start">
                                 <div class="px-3 py-1 bg-black/50 border border-bg-border rounded-full text-[10px] uppercase tracking-wider font-mono text-gray-400">
                                     ${project.type}
@@ -367,7 +405,7 @@
                 });
             } catch (error) {
                 console.error(error);
-                grid.innerHTML = '<div class="p-4 text-red-500">Failed to load projects.</div>';
+                document.getElementById('project-grid').innerHTML = '<div class="p-4 text-red-500">Failed to load projects.</div>';
             }
         }
     </script>
