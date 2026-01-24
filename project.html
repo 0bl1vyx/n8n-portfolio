@@ -16,9 +16,18 @@
             }
         }
     </script>
-    <style>body { background-color: #0a0a0a; color: #d4d4d8; }</style>
+    <style>
+        body { background-color: #0a0a0a; color: #d4d4d8; }
+        /* Smooth fade for lightbox */
+        .lightbox { transition: opacity 0.3s ease; }
+    </style>
 </head>
 <body class="min-h-screen flex flex-col">
+
+    <div id="lightbox" class="fixed inset-0 z-[100] bg-black/95 hidden flex justify-center items-center p-4 opacity-0 cursor-zoom-out" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" class="max-w-full max-h-full rounded-lg shadow-2xl border border-bg-border object-contain">
+        <div class="absolute top-4 right-4 text-white font-mono text-sm bg-bg-card border border-bg-border px-3 py-1 rounded cursor-pointer">CLOSE [X]</div>
+    </div>
 
     <nav class="w-full border-b border-bg-border bg-bg-main sticky top-0 z-50">
         <div class="max-w-5xl mx-auto px-6 h-16 flex justify-between items-center">
@@ -33,14 +42,19 @@
         <div id="loading" class="py-20 text-center text-gray-500 font-mono animate-pulse">Loading System Data...</div>
 
         <div id="project-content" class="hidden opacity-0 transition-opacity duration-500">
-            <header class="mb-12">
-                <div class="flex gap-2 mb-6" id="tags-container"></div>
-                <h1 id="p-title" class="text-4xl md:text-6xl font-bold text-white mb-6"></h1>
-                <p id="p-desc" class="text-xl text-gray-400 font-light max-w-2xl"></p>
+            <header class="mb-8">
+                <div class="flex flex-wrap gap-2 mb-6" id="tags-container"></div>
+                <h1 id="p-title" class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight"></h1>
+                <p id="p-desc" class="text-lg text-gray-400 font-light max-w-2xl"></p>
             </header>
 
-            <div class="rounded-xl overflow-hidden border border-bg-border mb-16 bg-bg-card">
-                <img id="p-image" src="" class="w-full h-64 md:h-[500px] object-cover opacity-80" alt="Dashboard">
+            <div class="mb-16">
+                <div class="rounded-xl overflow-hidden border border-bg-border bg-bg-card relative group cursor-zoom-in" onclick="openLightbox(this.querySelector('img').src)">
+                    <img id="p-main-image" src="" class="w-full h-64 md:h-[500px] object-cover opacity-90 group-hover:opacity-100 transition-opacity" alt="Main Workflow">
+                    <div class="absolute bottom-4 right-4 bg-black/50 backdrop-blur text-xs text-white px-3 py-1 rounded font-mono">CLICK TO ENLARGE</div>
+                </div>
+                
+                <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4"></div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -56,7 +70,7 @@
                         <ul id="tech-list" class="space-y-3 text-sm text-gray-300"></ul>
                     </div>
                     
-                    <a href="mailto:your-email@gmail.com" class="block w-full py-4 bg-white text-black text-center font-bold rounded-lg hover:bg-gray-200 transition">
+                    <a href="mailto:priyodas567@gmail.com" class="block w-full py-4 bg-white text-black text-center font-bold rounded-lg hover:bg-gray-200 transition">
                         Need something similar?
                     </a>
                 </div>
@@ -81,11 +95,35 @@
         </div>
     </main>
 
-    <footer class="text-center py-8 text-gray-600 text-xs font-mono border-t border-bg-border mt-12">
+    <footer class="text-center py-12 text-gray-600 text-xs font-mono border-t border-bg-border mt-12">
+        <div class="flex justify-center gap-6 mb-4">
+             <a href="mailto:priyodas567@gmail.com" class="hover:text-white transition">Email</a>
+             <a href="https://www.linkedin.com/in/0bl1vyx/" class="hover:text-white transition">LinkedIn</a>
+             <a href="https://github.com/0bl1vyx" class="hover:text-white transition">GitHub</a>
+        </div>
         &copy; 2026 Priyo Das
     </footer>
 
     <script>
+        // LIGHTBOX LOGIC
+        function openLightbox(src) {
+            const lb = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            img.src = src;
+            lb.classList.remove('hidden');
+            setTimeout(() => lb.classList.remove('opacity-0'), 10); // Fade in
+            document.body.style.overflow = 'hidden'; // Stop background scrolling
+        }
+
+        function closeLightbox() {
+            const lb = document.getElementById('lightbox');
+            lb.classList.add('opacity-0');
+            setTimeout(() => {
+                lb.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
         async function loadProjectDetails() {
             const urlParams = new URLSearchParams(window.location.search);
             const projectId = urlParams.get('id');
@@ -100,11 +138,30 @@
 
                 document.getElementById('p-title').innerText = project.title;
                 document.getElementById('p-desc').innerText = project.description;
-                document.getElementById('p-image').src = project.image;
                 document.getElementById('p-metric').innerText = project.metric;
                 document.getElementById('p-problem').innerText = project.full_details.problem;
                 document.getElementById('p-solution').innerText = project.full_details.solution;
                 document.getElementById('p-result').innerText = project.full_details.result;
+
+                // Handle Images (Array vs String fallback)
+                let images = Array.isArray(project.images) ? project.images : [project.image];
+                
+                // Set Main Image
+                if(images.length > 0) {
+                    document.getElementById('p-main-image').src = images[0];
+                }
+
+                // Generate Gallery for extra images
+                if (images.length > 1) {
+                    const gallery = document.getElementById('gallery-grid');
+                    images.slice(1).forEach(imgSrc => {
+                        gallery.innerHTML += `
+                            <div class="rounded-lg overflow-hidden border border-bg-border h-24 cursor-pointer hover:border-accent-500 transition-colors" onclick="openLightbox('${imgSrc}')">
+                                <img src="${imgSrc}" class="w-full h-full object-cover">
+                            </div>
+                        `;
+                    });
+                }
 
                 const tagsContainer = document.getElementById('tags-container');
                 project.tags.forEach(tag => {
