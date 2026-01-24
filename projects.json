@@ -1,44 +1,47 @@
 [
   {
     "id": "amazon-lead-gen",
-    "title": "Amazon PPC Lead Generator",
+    "title": "Amazon PPC Lead System",
     "type": "Client Project",
-    "tags": ["n8n", "Web Scraping", "Business Logic"],
-    "image": "https://placehold.co/800x450/1e293b/475569?text=Workflow+Screenshot",
-    "description": "A fully automated lead qualification system that scrapes agency websites to detect outdated tech stacks, filtering high-value prospects.",
+    "metric": "15 Hrs/Week Saved",
+    "tags": ["n8n", "Web Scraping", "CRM"],
+    "image": "https://placehold.co/800x450/111827/4ade80?text=Lead+Gen+Workflow",
+    "description": "Automated system that identifies high-value prospects by scanning agency websites for outdated tech stacks.",
     "full_details": {
-      "problem": "The client was spending 15 hours/week manually checking agency websites to find sales targets. They needed a way to automate this research without hiring a VA.",
-      "solution": "I designed an n8n workflow that ingests domain lists, scrapes HTML content, and uses Regex logic to identify outdated WordPress versions. Qualified leads are auto-saved to a CRM.",
-      "tech_stack": ["n8n (Self-Hosted)", "HTTP Request Node", "Regex Logic", "Google Sheets"],
-      "result": "Reduced manual research time by 95%. The client now receives a qualified list of leads every Monday morning automatically."
+      "problem": "The client was burning 15 hours a week manually checking websites to find sales leads. It was slow, boring, and prone to human error.",
+      "solution": "I built a self-hosted n8n workflow. It accepts a list of domains, scrapes the HTML, uses Regex to spot outdated WordPress versions, and auto-qualifies the lead.",
+      "tech_stack": ["n8n", "Puppeteer", "Regex", "Google Sheets"],
+      "result": "The client now wakes up to a list of qualified leads every Monday. Zero manual checking required."
     }
   },
   {
     "id": "linkedin-scraper",
-    "title": "LinkedIn Data Extraction Tool",
-    "type": "Internal Demo",
-    "tags": ["API Reverse Engineering", "Python", "Chrome Ext"],
-    "image": "https://placehold.co/800x450/1e293b/475569?text=Extension+UI",
-    "description": "A custom tool designed to securely fetch public profile data by reverse engineering internal API endpoints, bypassing standard bot detection.",
+    "title": "LinkedIn Data Extractor",
+    "type": "Internal Tool",
+    "metric": "0% Ban Rate",
+    "tags": ["Python", "API Reverse Eng", "Chrome"],
+    "image": "https://placehold.co/800x450/111827/4ade80?text=Data+Extractor",
+    "description": "A stealth extraction tool that bypasses anti-bot measures to collect public profile data securely.",
     "full_details": {
-      "problem": "Standard scraping tools are often blocked by LinkedIn's anti-bot measures. I needed a method to gather public data reliably for analysis.",
-      "solution": "I reverse-engineered the internal API calls made by the browser and built a Chrome Extension that piggybacks on valid session tokens to fetch data safely.",
-      "tech_stack": ["Chrome Extension Architecture", "Python Backend", "API Traffic Analysis"],
-      "result": "Achieved a 0% ban rate while gathering data at scale, demonstrating the ability to work with complex, secured APIs."
+      "problem": "Standard scraping tools get blocked by LinkedIn immediately. My client needed market data but couldn't get it reliably.",
+      "solution": "I reverse-engineered the internal API calls. Instead of 'attacking' the site, I built a Chrome Extension that piggybacks on valid user sessions to fetch data naturally.",
+      "tech_stack": ["Python", "Chrome Ext", "Network Analysis"],
+      "result": "Stable, long-term data collection with zero account flags or IP bans."
     }
   },
   {
     "id": "invoice-agent",
-    "title": "AI Invoice Processing System",
+    "title": "AI Invoice Accountant",
     "type": "Client Project",
-    "tags": ["n8n", "OpenAI", "Finance Ops"],
-    "image": "https://placehold.co/800x450/1e293b/475569?text=AI+Agent+Logic",
-    "description": "An intelligent document processing agent that extracts financial data from PDF invoices and updates accounting records automatically.",
+    "metric": "100% Automated",
+    "tags": ["n8n", "OpenAI", "Gmail"],
+    "image": "https://placehold.co/800x450/111827/4ade80?text=AI+Finance+Agent",
+    "description": "An AI agent that reads incoming invoice PDFs (even handwritten ones) and updates the accounting software.",
     "full_details": {
-        "problem": "A small business owner was drowning in PDF invoices, manually typing data into Excel. OCR tools failed on handwritten notes.",
-        "solution": "I built an n8n workflow using OpenAI's Vision model. It reads the PDF as an image, extracts 'Vendor', 'Date', and 'Total', and formats it strictly as JSON.",
-        "tech_stack": ["n8n", "Gmail Trigger", "OpenAI GPT-4o", "JSON Formatting"],
-        "result": "100% accuracy on typed invoices and 90% on handwritten ones. Completely removed manual data entry from the owner's workload."
+        "problem": "A business owner was drowning in PDF invoices. OCR tools couldn't read the handwritten notes, leading to hours of data entry.",
+        "solution": "I connected Gmail to n8n and OpenAI's Vision model. The AI 'looks' at the PDF like a human would, extracts the specific numbers, and formats them for the database.",
+        "tech_stack": ["n8n", "GPT-4o", "Gmail API", "JSON"],
+        "result": "Completely removed the owner from the loop. The system handles 100+ invoices a month automatically."
     }
   }
 ]
