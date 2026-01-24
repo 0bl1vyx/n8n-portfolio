@@ -5,7 +5,10 @@
     "type": "Client Project",
     "metric": "15 Hrs/Week Saved",
     "tags": ["n8n", "Web Scraping", "CRM"],
-    "image": "https://placehold.co/800x450/111827/4ade80?text=Lead+Gen+Workflow",
+    "images": [
+        "https://placehold.co/1200x800/111827/4ade80?text=Main+Workflow+Map",
+        "https://placehold.co/1200x800/111827/4ade80?text=Google+Sheets+Output"
+    ],
     "description": "Automated system that identifies high-value prospects by scanning agency websites for outdated tech stacks.",
     "full_details": {
       "problem": "The client was burning 15 hours a week manually checking websites to find sales leads. It was slow, boring, and prone to human error.",
@@ -20,7 +23,10 @@
     "type": "Internal Tool",
     "metric": "0% Ban Rate",
     "tags": ["Python", "API Reverse Eng", "Chrome"],
-    "image": "https://placehold.co/800x450/111827/4ade80?text=Data+Extractor",
+    "images": [
+        "https://placehold.co/1200x800/111827/4ade80?text=Chrome+Extension+UI",
+        "https://placehold.co/1200x800/111827/4ade80?text=JSON+Data+Structure"
+    ],
     "description": "A stealth extraction tool that bypasses anti-bot measures to collect public profile data securely.",
     "full_details": {
       "problem": "Standard scraping tools get blocked by LinkedIn immediately. My client needed market data but couldn't get it reliably.",
@@ -35,7 +41,10 @@
     "type": "Client Project",
     "metric": "100% Automated",
     "tags": ["n8n", "OpenAI", "Gmail"],
-    "image": "https://placehold.co/800x450/111827/4ade80?text=AI+Finance+Agent",
+    "images": [
+        "https://placehold.co/1200x800/111827/4ade80?text=AI+Vision+Logic",
+        "https://placehold.co/1200x800/111827/4ade80?text=Email+Trigger+Setup"
+    ],
     "description": "An AI agent that reads incoming invoice PDFs (even handwritten ones) and updates the accounting software.",
     "full_details": {
         "problem": "A business owner was drowning in PDF invoices. OCR tools couldn't read the handwritten notes, leading to hours of data entry.",
