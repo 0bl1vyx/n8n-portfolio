@@ -16,8 +16,7 @@
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        // High-End Emerald Green
-                        accent: { 400: '#4ade80', 500: '#22c55e', 600: '#16a34a', glow: 'rgba(74, 222, 128, 0.5)' },
+                        accent: { 400: '#4ade80', 500: '#22c55e', 600: '#16a34a' },
                         bg: { main: '#020202', card: '#09090b', border: '#27272a' }
                     }
                 }
@@ -28,57 +27,62 @@
         body { 
             background-color: #020202; 
             color: #e5e5e5; 
-            cursor: none; /* Custom cursor only */
+            cursor: none; 
             overflow-x: hidden;
         }
         
-        /* CANVAS LAYER */
+        /* CANVAS LAYER - Optimized with transform hack for GPU */
         #canvas-bg {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: -1;
-            /* Vignette Effect to darken corners */
             background: radial-gradient(circle at center, transparent 0%, #020202 100%);
+            transform: translateZ(0); /* Hardware acceleration */
         }
 
-        /* MAGNETIC CURSOR */
+        /* CUSTOM CURSOR */
         .cursor-dot {
             width: 6px; height: 6px; background-color: #4ade80;
             position: fixed; top: 0; left: 0; transform: translate(-50%, -50%);
             border-radius: 50%; z-index: 9999; pointer-events: none;
+            will-change: left, top;
         }
         .cursor-outline {
             width: 30px; height: 30px; border: 1px solid rgba(74, 222, 128, 0.3);
             position: fixed; top: 0; left: 0; transform: translate(-50%, -50%);
             border-radius: 50%; z-index: 9998; pointer-events: none;
-            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            transition: width 0.15s, height 0.15s, background-color 0.15s; /* Faster transition */
+            will-change: left, top, width, height;
         }
         
-        /* Hover State for Cursor */
+        /* Hover State */
         body.hovering .cursor-outline {
             width: 50px; height: 50px;
             background-color: rgba(74, 222, 128, 0.1);
             border-color: #4ade80;
         }
 
-        /* GLASS CARDS - Optimized Blur */
+        /* GLASS CARDS - Performance Optimized */
         .glass-card {
-            background: rgba(9, 9, 11, 0.6);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background: rgba(9, 9, 11, 0.8); /* Slightly more opaque for less render cost */
             border: 1px solid #27272a;
-            transition: all 0.3s ease;
+            transition: transform 0.2s ease, border-color 0.2s ease;
         }
-        .glass-card:hover {
-            border-color: #22c55e;
-            box-shadow: 0 0 25px -5px rgba(34, 197, 94, 0.15);
-            transform: translateY(-3px);
+        
+        /* Only apply expensive blur on larger screens */
+        @media (min-width: 768px) {
+            .glass-card {
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                background: rgba(9, 9, 11, 0.6);
+            }
         }
 
-        /* UTILS */
+        .glass-card:hover {
+            border-color: #22c55e;
+            transform: translateY(-2px);
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -90,7 +94,7 @@
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
 
-    <nav class="fixed top-0 w-full z-50 border-b border-bg-border/50 bg-bg-main/80 backdrop-blur-md">
+    <nav class="fixed top-0 w-full z-50 border-b border-bg-border/50 bg-bg-main/90 backdrop-blur-sm">
         <div class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
             <div class="text-sm font-bold tracking-tight flex items-center gap-2">
                 <span class="text-accent-500 font-mono">./</span> PRIYO DAS
@@ -134,7 +138,7 @@
         </div>
     </header>
 
-    <div class="border-y border-bg-border bg-bg-card/30 overflow-hidden relative backdrop-blur-sm z-10">
+    <div class="border-y border-bg-border bg-bg-card/50 overflow-hidden relative z-10">
         <div class="max-w-6xl mx-auto px-6 py-8">
             <p class="text-center text-xs font-mono text-gray-500 mb-6 uppercase tracking-widest">Powering automations with</p>
             <div class="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-bg-main to-transparent z-20"></div>
@@ -216,89 +220,60 @@
     </footer>
 
     <script>
-        // --- CURSOR LOGIC ---
-        const cursorDot = document.querySelector('.cursor-dot');
-        const cursorOutline = document.querySelector('.cursor-outline');
-
-        window.addEventListener('mousemove', (e) => {
-            cursorDot.style.left = `${e.clientX}px`;
-            cursorDot.style.top = `${e.clientY}px`;
-            
-            cursorOutline.animate({
-                left: `${e.clientX}px`,
-                top: `${e.clientY}px`
-            }, { duration: 400, fill: "forwards" });
-        });
-
-        function cursorHover() { document.body.classList.add('hovering'); }
-        function cursorLeave() { document.body.classList.remove('hovering'); }
-
-        // --- OPTIMIZED CANVAS BACKGROUND ---
+        // --- PERFORMANCE OPTIMIZED CANVAS ---
         const canvas = document.getElementById('canvas-bg');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: false }); // Optimize for no alpha in bg
         
         let particles = [];
-        let mouse = { x: null, y: null };
+        let mouse = { x: -1000, y: -1000 };
+        let isMobile = window.innerWidth < 768;
 
-        // Handle Resize
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            isMobile = window.innerWidth < 768;
             initParticles();
         }
         window.addEventListener('resize', resizeCanvas);
         window.addEventListener('mousemove', (e) => {
-            mouse.x = e.x;
-            mouse.y = e.y;
-        });
-        window.addEventListener('mouseout', () => {
-            mouse.x = null;
-            mouse.y = null;
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
         });
 
         class Particle {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                // Random speed but very slow for "floating" feel
-                this.vx = (Math.random() - 0.5) * 0.5; 
-                this.vy = (Math.random() - 0.5) * 0.5;
+                this.vx = (Math.random() - 0.5) * 0.3; // Slower = smoother
+                this.vy = (Math.random() - 0.5) * 0.3;
                 this.size = Math.random() * 2;
-                this.baseX = this.x;
-                this.baseY = this.y;
-                this.density = (Math.random() * 30) + 1;
             }
 
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Mouse Interaction (Push/Pull effect)
-                if (mouse.x != null) {
-                    let dx = mouse.x - this.x;
-                    let dy = mouse.y - this.y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-                    const maxDistance = 150;
-                    
-                    if (distance < maxDistance) {
-                        const forceDirectionX = dx / distance;
-                        const forceDirectionY = dy / distance;
-                        const force = (maxDistance - distance) / maxDistance;
-                        const directionX = forceDirectionX * force * this.density * 0.6;
-                        const directionY = forceDirectionY * force * this.density * 0.6;
-                        
-                        this.x -= directionX;
-                        this.y -= directionY;
-                    }
+                // Mouse Repel (Cheaper Math)
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                // Squared distance check avoids Math.sqrt()
+                const distSq = dx*dx + dy*dy; 
+                
+                if (distSq < 22500) { // 150^2
+                    const force = (22500 - distSq) / 22500;
+                    const fx = (dx / Math.sqrt(distSq)) * force * 2; // Only sqrt here
+                    const fy = (dy / Math.sqrt(distSq)) * force * 2;
+                    this.x -= fx;
+                    this.y -= fy;
                 }
 
-                // Screen Wrap
-                if (this.x > canvas.width || this.x < 0) this.vx = -this.vx;
-                if (this.y > canvas.height || this.y < 0) this.vy = -this.vy;
+                if (this.x > canvas.width) this.x = 0;
+                else if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                else if (this.y < 0) this.y = canvas.height;
             }
 
             draw() {
-                ctx.fillStyle = 'rgba(74, 222, 128, 0.5)';
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
@@ -307,51 +282,46 @@
 
         function initParticles() {
             particles = [];
-            // OPTIMIZATION: Less particles on mobile
-            let particleCount = (canvas.width * canvas.height) / 20000;
-            if (window.innerWidth < 768) particleCount = 40; // Cap mobile particles
-            
-            for (let i = 0; i < particleCount; i++) {
+            // DRASTICALLY REDUCE COUNT ON MOBILE
+            // Desktop: ~100 | Mobile: Fixed 25
+            const count = isMobile ? 25 : Math.floor((canvas.width * canvas.height) / 20000);
+            for (let i = 0; i < count; i++) {
                 particles.push(new Particle());
             }
         }
 
         function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Use fillRect instead of clearRect for trail effect possibility, but clear is faster for crispness
+            ctx.fillStyle = '#020202';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
+            ctx.fillStyle = 'rgba(74, 222, 128, 0.5)';
+            ctx.strokeStyle = 'rgba(74, 222, 128, 0.15)';
+            ctx.lineWidth = 1;
+
+            // Batch drawing not possible easily due to lines, but optimized loops help
             for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
+                let p = particles[i];
+                p.update();
+                
+                // Draw Particle
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
 
-                // Draw Connections
-                for (let j = i; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
+                // Draw Lines (Nearest Neighbor)
+                // Skip line calcs entirely on super small screens if needed, but 25 particles is fine
+                for (let j = i + 1; j < particles.length; j++) {
+                    let p2 = particles[j];
+                    let dx = p.x - p2.x;
+                    let dy = p.y - p2.y;
+                    let distSq = dx*dx + dy*dy;
 
-                    // Connection Distance
-                    if (distance < 120) {
+                    // 120^2 = 14400. Using squared distance avoids Math.sqrt in hot loop
+                    if (distSq < 14400) {
                         ctx.beginPath();
-                        let opacity = 1 - (distance / 120);
-                        ctx.strokeStyle = `rgba(74, 222, 128, ${opacity * 0.2})`; 
-                        ctx.lineWidth = 1;
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
-                }
-
-                // Connect to mouse
-                if (mouse.x != null) {
-                    const dx = particles[i].x - mouse.x;
-                    const dy = particles[i].y - mouse.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < 150) {
-                        ctx.beginPath();
-                        let opacity = 1 - (distance / 150);
-                        ctx.strokeStyle = `rgba(74, 222, 128, ${opacity * 0.4})`;
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(mouse.x, mouse.y);
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
                         ctx.stroke();
                     }
                 }
@@ -362,7 +332,42 @@
         resizeCanvas();
         animate();
 
-        // --- PROJECT LOADER ---
+        // --- CURSOR LOGIC ---
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+
+        function cursorHover() { document.body.classList.add('hovering'); }
+        function cursorLeave() { document.body.classList.remove('hovering'); }
+        
+        // Use requestAnimationFrame for cursor updates to sync with refresh rate
+        let mouseX = 0, mouseY = 0;
+        let outlineX = 0, outlineY = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Dot follows instantly
+            cursorDot.style.left = mouseX + 'px';
+            cursorDot.style.top = mouseY + 'px';
+        });
+
+        // Smooth outline trailing loop
+        function animateCursor() {
+            let distX = mouseX - outlineX;
+            let distY = mouseY - outlineY;
+            
+            outlineX += distX * 0.15; // Ease factor
+            outlineY += distY * 0.15;
+            
+            cursorOutline.style.left = outlineX + 'px';
+            cursorOutline.style.top = outlineY + 'px';
+            
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        // --- PROJECT LOADING ---
         setTimeout(loadProjects, 100);
         async function loadProjects() {
             try {
