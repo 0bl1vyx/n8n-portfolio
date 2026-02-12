@@ -1,0 +1,686 @@
+{
+  "name": "Bug Bounty Programs Finder",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 11
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -720,
+        -256
+      ],
+      "id": "951fd90c-e398-4269-889a-1475d6414b39",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        -16
+      ],
+      "id": "e28855d8-fb75-41ad-bfe7-a9e170c11955",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "00278d10-25c9-4188-b2f2-f0e4e5980634",
+              "name": "link",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "65cea3ea-d5ae-4026-ba04-5b4ab859420f",
+      "name": "Get Links"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7c0dd984-e394-4bbf-a23d-d06688f12804",
+              "name": "items",
+              "value": "={{ $json.items }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        -240
+      ],
+      "id": "6f1828f3-75c3-48b4-ab9d-903b0572dd6b",
+      "name": "Items Filter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        496,
+        304
+      ],
+      "id": "d626b938-58d0-40e3-9baf-a555e0b6b176",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Bm6EJZVpvAJExJCj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get raw text directly from the LLM output\nconst rawText = items[0].json.text;\n\nif (!rawText || typeof rawText !== 'string') {\n  return [];\n}\n\nconst parsedData = {};\n\n// 2. Split into lines\nconst lines = rawText.split('\\n');\n\nfor (const line of lines) {\n  const splitIndex = line.indexOf(':');\n  if (splitIndex === -1) continue;\n\n  const key = line.substring(0, splitIndex).trim();\n  const value = line.substring(splitIndex + 1).trim();\n\n  switch (key) {\n    case 'Program Name':\n      parsedData.programName = value;\n      break;\n    case 'URL':\n      parsedData.url = value;\n      break;\n    case 'Launch Status':\n      parsedData.launchStatus = value;\n      break;\n    case 'Scope':\n      parsedData.scope = value;\n      break;\n    case 'Reward Type':\n      parsedData.rewardType = value;\n      break;\n    case 'Submission Method':\n      parsedData.submissionMethod = value;\n      break;\n    case 'Notes':\n      parsedData.notes = value;\n      break;\n  }\n}\n\n// 3. Return a single n8n item\nreturn [{ json: parsedData }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        272
+      ],
+      "id": "d94cc907-8549-4278-b94d-e9b05fddfcc8",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "17_K84rSs4TQWLT_R2dmcYwV8-uRV1fiPAR2Kod5UIw4",
+          "mode": "list",
+          "cachedResultName": "Bug Bounty Programs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17_K84rSs4TQWLT_R2dmcYwV8-uRV1fiPAR2Kod5UIw4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17_K84rSs4TQWLT_R2dmcYwV8-uRV1fiPAR2Kod5UIw4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Program Name": "={{ $json.programName }}",
+            "Launch Status": "={{ $json.launchStatus }}",
+            "URL": "={{ $json.url }}",
+            "Scope": "={{ $json.scope }}",
+            "Reward type": "={{ $json.rewardType }}",
+            "Submission Method": "={{ $json.submissionMethod }}",
+            "Notes": "={{ $json.notes }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Program Name",
+              "displayName": "Program Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Launch Status",
+              "displayName": "Launch Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Scope",
+              "displayName": "Scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reward type",
+              "displayName": "Reward type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Submission Method",
+              "displayName": "Submission Method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        240
+      ],
+      "id": "c10bc5c7-0a82-4876-a483-d75f78b713c5",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zEysrlmnKBjPRnIP",
+          "name": "789 Main Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key"
+            },
+            {
+              "name": "cx"
+            },
+            {
+              "name": "q",
+              "value": "=(intext:\"reward\" OR intext:\"bounty\" OR intext:\"swag\") AND (inurl:\"/security\" OR inurl:\"/responsible-disclosure\" OR inurl:\"/vulnerability-disclosure\" OR inurl:\"/bug-bounty\" OR intitle:\"security.txt\") -site:hackerone.com -site:bugcrowd.com -site:yeswehack.com -site:intigriti.com -site:openbugbounty.org -site:synack.com -site:hackenproof.com -site:medium.com -site:linkedin.com"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.start_index }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        -240
+      ],
+      "id": "e0ca6a69-4b84-4850-8faa-522e4a5141a6",
+      "name": "Google Search"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.9"
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.google.com/"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 3
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        192,
+        0
+      ],
+      "id": "80f92031-dbe4-447f-a92e-1253d9774b30",
+      "name": "HTTP Request",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -208,
+        240
+      ],
+      "id": "0dc7ddef-478e-4fc2-986a-92642336c816",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Separate the input items into two lists based on what fields they have\n// 'dataItems' are the ones with the parsed info (like programName)\nconst dataItems = items.filter(item => item.json.programName);\n\n// 'linkItems' are the ones that only have the link\nconst linkItems = items.filter(item => item.json.link);\n\n// 2. Loop through the data items and find the matching link by index\nconst results = dataItems.map((item, index) => {\n  const finalJson = item.json;\n\n  // Get the link from the corresponding index in the link list\n  // We use optional chaining (?.) to avoid errors if the list lengths differ\n  const originalLink = linkItems[index]?.json?.link;\n\n  // 3. Replace the URL if a link exists\n  if (originalLink) {\n    finalJson.url = originalLink;\n  }\n\n  return {\n    json: finalJson\n  };\n});\n\n// 4. Return the cleaned 10 items\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        240
+      ],
+      "id": "9e638129-fd62-41d6-a388-b710108ce2b0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "17_K84rSs4TQWLT_R2dmcYwV8-uRV1fiPAR2Kod5UIw4",
+          "mode": "list",
+          "cachedResultName": "Bug Bounty Programs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17_K84rSs4TQWLT_R2dmcYwV8-uRV1fiPAR2Kod5UIw4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17_K84rSs4TQWLT_R2dmcYwV8-uRV1fiPAR2Kod5UIw4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -688,
+        160
+      ],
+      "id": "1a4d39cb-336f-4134-aa58-d28ec826c0ed",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zEysrlmnKBjPRnIP",
+          "name": "789 Main Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- URL NORMALIZER ---\nfunction normalizeUrl(url) {\n  if (!url) return '';\n\n  try {\n    // Decode URL-encoded strings\n    url = decodeURIComponent(url);\n  } catch (e) {}\n\n  return url\n    .trim()\n    .toLowerCase()\n    .replace(/^https?:\\/\\//, '') // remove http / https\n    .replace(/\\/$/, '');         // remove trailing slash\n}\n\n// --- READ BLOCKED URLS FROM GOOGLE SHEETS ---\nconst blockedUrls = $(\"Get row(s) in sheet\").all()\n  .map(item => normalizeUrl(item.json.URL))\n  .filter(Boolean);\n\n// --- READ SEARCH RESULTS ---\nconst searchResults = $(\"Split Out\").all();\n\n// --- FILTER ---\nconst filtered = searchResults.filter(item => {\n  const link = item.json.link;\n  if (!link) return false;\n\n  const normalizedLink = normalizeUrl(link);\n\n  return !blockedUrls.some(blocked =>\n    normalizedLink.startsWith(blocked)\n  );\n});\n\n// --- OUTPUT ---\nreturn filtered;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        0
+      ],
+      "id": "e34320bd-0ff6-461d-abe7-db70b330b3fa",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -448,
+        80
+      ],
+      "id": "f6ad5e8e-382d-4379-8817-9665112503d5",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\nSite Text = {{ $json.data }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert Cybersecurity Reconnaissance Analyst specialized in analyzing legal documents, security.txt files, and \"Responsible Disclosure\" policies.  Your goal is to extract structured data about security programs from the unstructured web page text provided by the user.  ### ANALYSIS INSTRUCTIONS:  1. **Determine Program Type:**    - **BBP (Bug Bounty Program):** Explicitly mentions monetary rewards (cash, bounty, USD, EUR, crypto).    - **VDP (Vulnerability Disclosure Program):** Mentions \"safe harbor\" or legal protection but explicitly states NO monetary reward.    - **Hybrid:** VDP that offers non-monetary rewards (Swag, Hall of Fame/HoF).  2. **Verify Status (Launch Status):**    - Check for keywords like \"Deprecated,\" \"Closed,\" \"Paused,\" or \"No longer accepting reports.\"    - Check dates. If the page is outdated (older than 2 years) without recent updates, mark as \"Unverified/Old\".    - If no negative signs are found, mark as \"Active\".  3. **Identify Rewards:**    - Look for specific terms: \"Bounty,\" \"Cash,\" \"Swag,\" \"T-shirt,\" \"Hoodie,\" \"Hall of Fame,\" \"Acknowledgment,\" \"Safe Harbor only.\"  4. **Determine Scope:**    - Briefly summarize what is allowed (e.g., \"*.domain.com\", \"Mobile Apps\", \"Specific IP ranges\").  5. **Find Submission Method:**    - Look for an email address (e.g., security@company.com).    - Look for a web form link.    - Look for a redirection to a 3rd party platform (HackerOne, Bugcrowd, Intigriti).  ### OUTPUT FORMAT:  You must output the result strictly in the following format. Do not add conversational filler (like \"Here is the analysis\"). If a field is not found in the text, write \"Not Specified\".  Program Name: [Company/Project Name] URL: [The URL provided in the prompt] Launch Status: [Active / Paused / Closed] Scope: [Brief summary of in-scope assets] Reward Type: [Cash / Swag / Hall of Fame / Safe Harbor Only] Submission Method: [Email Address / Form URL / 3rd Party Link] Notes: [One short sentence on BBP vs VDP status or warnings]"
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 1,
+          "delayBetweenBatches": 2000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        672,
+        128
+      ],
+      "id": "6cb91aa6-bbf2-47cc-9c10-4f33abca92d2",
+      "name": "Basic LLM Chain",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        432,
+        112
+      ],
+      "id": "24afbbd8-987b-4768-893d-ed14a1377d3b",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -288,
+        -256
+      ],
+      "id": "11502201-9ca9-4184-8447-82b1beb8e51b",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const resultsCount = 61; // Total results you want\nconst items = [];\n\nfor (let i = 21; i <= resultsCount; i += 10) {\n  items.push({ json: { start_index: i } });\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        -256
+      ],
+      "id": "2aad79de-d848-4dbb-80fd-fa45a602e4c8",
+      "name": "Search Page Index"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search Page Index",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Items Filter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Links": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Search": {
+      "main": [
+        [
+          {
+            "node": "Items Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Get Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Page Index": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedPerExecution": 10
+  },
+  "versionId": "95bb0663-2b02-40d2-8b6a-426c0eec44ee",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "91652ecb94261b9d69ecb1e2db50e5b488590a3a9dfd5e59a68c0904a666024b"
+  },
+  "id": "sLJhuyxDuBGbUayI",
+  "tags": []
+}

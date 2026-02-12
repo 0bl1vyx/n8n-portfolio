@@ -1,0 +1,203 @@
+{
+  "name": "Form Response",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "framer",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1136,
+        -304
+      ],
+      "id": "6fb75f28-675f-4b64-9424-b8760c3c4980",
+      "name": "Webhook",
+      "webhookId": "25654854-ac23-4d1a-9ac6-7992202e485f"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Write a email using this deatils and give this things in json. 1. message header, 2. message body"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -816,
+        -304
+      ],
+      "id": "1b19b6b9-22fc-4978-8818-ce0bea556ccb",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-r1-0528:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        -128
+      ],
+      "id": "ad4657fe-0d82-4ad4-9d1a-79894000ea00",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "dyLlGTwVswzTdD32",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -352,
+        -304
+      ],
+      "id": "d8cbb370-aa1d-4d0e-93d6-9486e383cfc2",
+      "name": "Send a message",
+      "webhookId": "ecf37ff3-558f-47dc-b257-5a94c45adc14"
+    },
+    {
+      "parameters": {
+        "content": "## Receiving Form Response From Website ",
+        "height": 288,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1232,
+        -416
+      ],
+      "typeVersion": 1,
+      "id": "2b2ce68a-6a06-46e9-b732-67befaf9f7e6",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## AI Analyzing Response & Generating Personalized Email ",
+        "height": 432,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -880,
+        -416
+      ],
+      "typeVersion": 1,
+      "id": "2fb418aa-b309-4ab6-8650-87c4a4b5a4ee",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Gmail Node For Sending The Mail",
+        "height": 288,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -448,
+        -416
+      ],
+      "typeVersion": 1,
+      "id": "75137649-bbeb-4a9b-b36a-37f10ba14542",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "deirdre-nongenerative-fuggily.ngrok-free.dev",
+            "user-agent": "framer/webhooks",
+            "content-length": "65",
+            "accept-encoding": "gzip",
+            "content-type": "application/json",
+            "framer-webhook-attempt": "3",
+            "framer-webhook-submission-id": "af6e26fc-68c4-45ee-b509-885e69cc1067",
+            "newrelic": "eyJ2IjpbMCwxXSwiZCI6eyJ0eSI6IkFwcCIsImFwIjoiMTA0NjIzNjYxNiIsImFjIjoiMTk1MjQ4NyIsInR4IjoiYTNiZmE5YjAyYWQwMGNiZSIsImlkIjoiNjQwNmIwMmNmNGUyYjhkZSIsInRyIjoiYTNiZmE5YjAyYWQwMGNiZTVjOWZmNTNkNzJjMTc0Y2EiLCJwciI6MC4zNjExNjE1Mywic2EiOmZhbHNlLCJ0aSI6MTc2NzMzMzQ3NjYzNn19",
+            "traceparent": "00-a3bfa9b02ad00cbe5c9ff53d72c174ca-6406b02cf4e2b8de-00",
+            "tracestate": "1952487@nr=0-0-1952487-1046236616-6406b02cf4e2b8de-a3bfa9b02ad00cbe-0-0.361162-1767333476636",
+            "x-forwarded-for": "54.173.50.0",
+            "x-forwarded-host": "deirdre-nongenerative-fuggily.ngrok-free.dev",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "Email": "crypts@priyo.com",
+            "Name": "priyo d",
+            "Phone": "745367892"
+          },
+          "webhookUrl": "https://deirdre-nongenerative-fuggily.ngrok-free.dev/webhook-test/framer",
+          "executionMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "24766995-1919-4863-a837-346de521bd72",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "91652ecb94261b9d69ecb1e2db50e5b488590a3a9dfd5e59a68c0904a666024b"
+  },
+  "id": "qY2A3pQcKfbY8Zvg",
+  "tags": []
+}

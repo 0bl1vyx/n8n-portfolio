@@ -1,0 +1,486 @@
+{
+  "name": "Personal Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        -496
+      ],
+      "id": "dfb59743-7f27-4ba8-9698-543fa6b83926",
+      "name": "Telegram Trigger",
+      "webhookId": "026bbf59-1c37-4443-bfa7-acefe1a8935e",
+      "credentials": {
+        "telegramApi": {
+          "id": "N5xJ43cr2orzjj7y",
+          "name": "Zero Ai Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              },
+              {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "threshold": "BLOCK_NONE"
+              },
+              {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "threshold": "BLOCK_NONE"
+              },
+              {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        16
+      ],
+      "id": "49870be3-f350-4cac-9b47-1868296e1e80",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Bm6EJZVpvAJExJCj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        -352
+      ],
+      "id": "3078c310-cec1-422f-9919-b319c2cbaeb1",
+      "name": "Send a text message",
+      "webhookId": "6618014a-e77b-4d5c-ba09-58a7546a738d",
+      "credentials": {
+        "telegramApi": {
+          "id": "N5xJ43cr2orzjj7y",
+          "name": "Zero Ai Bot"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -720,
+        96
+      ],
+      "id": "da12eb7d-801c-456c-8bb6-46d4ddf0031e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1XlmHahyRSWZKgo86XhYSpcwY-W9s04zSvyGXqz3lqgg",
+          "mode": "list",
+          "cachedResultName": "N8N",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XlmHahyRSWZKgo86XhYSpcwY-W9s04zSvyGXqz3lqgg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "People",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XlmHahyRSWZKgo86XhYSpcwY-W9s04zSvyGXqz3lqgg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Name__using_to_match_', ``, 'string') }}",
+            "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}",
+            "Mobile": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Mobile', ``, 'string') }}",
+            "First Meet": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('First_Meet', ``, 'string') }}",
+            "extra notes": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('extra_notes', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mobile",
+              "displayName": "Mobile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "First Meet",
+              "displayName": "First Meet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "extra notes",
+              "displayName": "extra notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -400,
+        176
+      ],
+      "id": "f6247719-084e-4712-a108-6402e6442988",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YhtlY8TGBKtiSNMx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        16
+      ],
+      "id": "ab456a83-4adf-4ca2-aa67-0b47b8873e41",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "qI67bTGpNYLw27qg",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        176
+      ],
+      "id": "d168fd0f-1662-4178-b0f8-cc34e9189ef0",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "includeTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Include_Current_Time', ``, 'boolean') }}",
+        "outputFieldName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Output_Field_Name', ``, 'string') }}",
+        "options": {
+          "timezone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Timezone', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        176
+      ],
+      "id": "51ed86d3-152b-4cf8-8e4d-4542c6ac1d3d",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Useful for searching the internet to find real-time information, news, or data that you do not have in your internal knowledge base. Use this whenever the user asks about current events or specific external facts.",
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": " AIzaSyCq-gO0hyAEmVLaNxm7z-RC-MUdqRnLxbU "
+            },
+            {
+              "name": "cx",
+              "value": "b6a0b976460594010"
+            },
+            {
+              "name": "q",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `The keywords to search for on Google`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        64,
+        160
+      ],
+      "id": "d0a92b82-0e6a-4a43-b401-b889e699df21",
+      "name": "Google Search"
+    },
+    {
+      "parameters": {
+        "cityName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('City', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.openWeatherMapTool",
+      "typeVersion": 1,
+      "position": [
+        208,
+        112
+      ],
+      "id": "df80046c-1ab8-41fb-9b35-b37ad8d2a68d",
+      "name": "OpenWeatherMap",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "7CGXvMw16lirHDv3",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\nMy name is Zero. How can I assist you today?",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1040,
+        -288
+      ],
+      "id": "33f9b979-bf9b-4642-8454-2c798084645c",
+      "name": "When chat message received",
+      "webhookId": "4f280fc9-c5d4-4537-81c9-58cf3b620863"
+    },
+    {
+      "parameters": {
+        "content": "## TG Simple Memory\n{{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "db3ed73c-ab23-4e2f-b244-302c348b416e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "needsFallback": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -512,
+        -288
+      ],
+      "id": "3c3e384a-6758-464f-afb3-f29820c201c1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('URL', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        -544,
+        160
+      ],
+      "id": "f749ddca-f580-4cb1-86b8-51ac381d4ca8",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7afeab2c-b036-4766-9aee-40e61350f087",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "91652ecb94261b9d69ecb1e2db50e5b488590a3a9dfd5e59a68c0904a666024b"
+  },
+  "id": "7lqKAM0gRmMsTnXy",
+  "tags": []
+}

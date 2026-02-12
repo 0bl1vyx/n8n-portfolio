@@ -1,0 +1,369 @@
+{
+  "name": "Lead Finder Gym Landing Pages",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        32
+      ],
+      "id": "c53c89ab-8c7c-46d0-b935-7b5a58c3843c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -256,
+        160
+      ],
+      "id": "6501b92d-d113-401d-9575-3a5d087e19da",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 1. Get the current item\nconst item = $input.item.json;\n\n// 2. Extract and Clean Data\nconst title = item.title || \"Unknown Gym\";\nconst website = (item.website || \"\").toLowerCase().trim();\nconst phone = item.phoneUnformatted || item.phone || \"\";\nconst rating = parseFloat(item.totalScore || 0);\nconst reviews = parseInt(item.reviewsCount || 0);\n\n// 3. Create the formatted Rating string: e.g., \"4.8 (300)\"\nconst ratingFormatted = `${rating} (${reviews})`;\n\n// 4. Define the \"Skip List\" (Already has a real website)\nconst bigChains = ['anytimefitness', 'goldsgym', 'cult.fit', 'gethingyms'];\nconst isBigChain = bigChains.some(chain => title.toLowerCase().includes(chain) || website.includes(chain));\n\n// 5. Define \"Potential Lead\" Social Platforms\nconst socialAsWebsite = [\n    'instagram.com', 'facebook.com', 'youtube.com', 'youtu.be', \n    'twitter.com', 'x.com', 'threads.net', 'linkedin.com'\n];\n\n// 6. Logic: Filter and Identify Lead Type\nlet leadType = \"\";\nlet isHotLead = false;\n\nif (!isBigChain) {\n    if (website === \"\" || website.includes(\"google.com/search\")) {\n        leadType = \"High Intent (No Website)\";\n        isHotLead = true;\n    } \n    else if (socialAsWebsite.some(platform => website.includes(platform))) {\n        const platformName = socialAsWebsite.find(p => website.includes(p)).split('.')[0];\n        leadType = `Potential Client (Uses ${platformName} only)`;\n        isHotLead = true;\n    }\n}\n\n// 7. Output Result\nif (isHotLead && phone !== \"\") {\n    return {\n        gym_name: title,\n        phone: phone,\n        email: item.email || \"N/A\",\n        website_status: leadType,\n        current_link: item.website || \"None\",\n        area: item.neighborhood || item.city || \"Kolkata\",\n        rating: ratingFormatted, // Now formatted as \"4.8 (300)\"\n        maps_url: item.url,\n        status: \"New\"\n    };\n}\n\nreturn null;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        -96
+      ],
+      "id": "1a3f5d2e-b23a-4f99-8436-5153ebbbfb84",
+      "name": "Filter Out Hot Leads"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "nwua9Gu5YrADL7ZDj",
+          "mode": "list",
+          "cachedResultName": "Google Maps Scraper (compass/crawler-google-places)",
+          "cachedResultUrl": "https://console.apify.com/actors/nwua9Gu5YrADL7ZDj/input"
+        },
+        "customBody": "{\n  \"searchStringsArray\": [\"Gyms in mumbai\"],\n  \"maxResultsPerQuery\": 50,\n  \"language\": \"en\",\n  \"exportPlatformContactInfo\": true,\n  \"searchSocialMedia\": true\n}"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        -96
+      ],
+      "id": "e38d0942-ecf8-4938-956e-fdebb108f19b",
+      "name": "Get G-Map search Results",
+      "credentials": {
+        "apifyApi": {
+          "id": "xgcYjXdEuDlAUHaN",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ybNBYPHGnQbQtDMxI4EW7IX5djsRzTe_O5PM3wMUCGA",
+          "mode": "list",
+          "cachedResultName": "Gym Outreach Lead Gen",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ybNBYPHGnQbQtDMxI4EW7IX5djsRzTe_O5PM3wMUCGA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ybNBYPHGnQbQtDMxI4EW7IX5djsRzTe_O5PM3wMUCGA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -544,
+        176
+      ],
+      "id": "8570789c-8bb9-4e8d-b686-864eec2c29ee",
+      "name": "Get Rows For Duplication Check",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HbCltqZ2rO3Ms15o",
+          "name": "CryptS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\nconst existingPhones = new Map(); \nconst existingNames = new Map();\nconst existingUrls = new Set();\nconst finalLeads = [];\n\n// 1. Map out existing data from Sheet\nallItems.forEach(item => {\n    if (item.json.row_number) {\n        const p = String(item.json.Phone || \"\").replace(/\\D/g, \"\");\n        const n = String(item.json[\"Gym Name\"] || \"\").toLowerCase().trim();\n        const u = item.json[\"Maps Link\"] || \"\";\n        const r = parseInt(item.json.Rating || 0);\n\n        if (p) existingPhones.set(p, { name: n, reviews: r });\n        if (n) existingNames.set(n, p);\n        if (u) existingUrls.add(u);\n    }\n});\n\n// 2. The Smart Logic Pass\nallItems.forEach(item => {\n    if (!item.json.row_number && item.json.gym_name) {\n        const newP = String(item.json.phone || \"\").replace(/\\D/g, \"\");\n        const newN = item.json.gym_name.toLowerCase().trim();\n        const newU = item.json.maps_url || \"\";\n        const newR = parseInt(item.json.reviews || 0);\n        \n        let shouldAdd = true;\n        let note = \"\";\n\n        // Assumption 1: Exact Maps URL Match\n        if (existingUrls.has(newU)) {\n            shouldAdd = false; // Already in the sheet\n        }\n\n        // Assumption 2: Phone Match + Business Status check\n        if (shouldAdd && existingPhones.has(newP)) {\n            const oldData = existingPhones.get(newP);\n            if (oldData.name !== newN) {\n                note = `⚠️ Rebrand? Same number used by \"${oldData.name}\".`;\n            } else if (newR > oldData.reviews + 20) {\n                note = `🔥 Growth! They gained ${newR - oldData.reviews} new reviews.`;\n            } else {\n                shouldAdd = false; // Pure Duplicate\n            }\n        }\n\n        // Assumption 3: Name Match + Different Number\n        if (shouldAdd && existingNames.has(newN)) {\n            const oldPhone = existingNames.get(newN);\n            note = `📱 New Contact? Same name, but old number was ${oldPhone}.`;\n        }\n\n        if (shouldAdd) {\n            finalLeads.push({\n                json: {\n                    gym_name: item.json.gym_name,\n                    phone: item.json.phone,\n                    email: item.json.email || \"N/A\",\n                    website_status: item.json.website_status,\n                    current_link: item.json.current_link || \"None\",\n                    area: item.json.area,\n                    rating: item.json.rating,\n                    maps_url: item.json.maps_url,\n                    status: \"New\",\n                    date_added: new Date().toLocaleDateString('en-GB'),\n                    notes: note\n                }\n            });\n        }\n    }\n});\n\nreturn finalLeads;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        160
+      ],
+      "id": "3321f27e-ec29-43b7-b926-aa8df8ba79c0",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ybNBYPHGnQbQtDMxI4EW7IX5djsRzTe_O5PM3wMUCGA",
+          "mode": "list",
+          "cachedResultName": "Gym Outreach Lead Gen",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ybNBYPHGnQbQtDMxI4EW7IX5djsRzTe_O5PM3wMUCGA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ybNBYPHGnQbQtDMxI4EW7IX5djsRzTe_O5PM3wMUCGA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Gym Name": "={{ $json.gym_name }}",
+            "Phone": "={{ $json.phone }}",
+            "Email": "={{ $json.email }}",
+            "Website Status": "={{ $json.website_status }}",
+            "Current Link": "={{ $json.current_link }}",
+            "Area/Place": "={{ $json.area }}",
+            "Rating": "={{ $json.rating }}",
+            "Maps Link": "={{ $json.maps_url }}",
+            "Status": "={{ $json.status }}",
+            "Date Added": "={{ $json.date_added }}",
+            "Notes": "={{ $json.notes }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Gym Name",
+              "displayName": "Gym Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Website Status",
+              "displayName": "Website Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Maps Link",
+              "displayName": "Maps Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Current Link",
+              "displayName": "Current Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Added",
+              "displayName": "Date Added",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Area/Place",
+              "displayName": "Area/Place",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quick Message",
+              "displayName": "Quick Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        160
+      ],
+      "id": "30fead38-74dc-42fc-8064-5b369eaf3d01",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HbCltqZ2rO3Ms15o",
+          "name": "CryptS"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get G-Map search Results",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Rows For Duplication Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Out Hot Leads": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get G-Map search Results": {
+      "main": [
+        [
+          {
+            "node": "Filter Out Hot Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Rows For Duplication Check": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "33548dab-6dfc-405f-a525-4132f3306225",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "91652ecb94261b9d69ecb1e2db50e5b488590a3a9dfd5e59a68c0904a666024b"
+  },
+  "id": "F3lKRx7EF0T1ZiVH",
+  "tags": []
+}
