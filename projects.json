@@ -19,6 +19,26 @@
     }
   },
   {
+    "id": "invoice-data-entry-ai",
+    "title": "AI Invoice Data Entry",
+    "type": "Client Project",
+    "metric": "99% Accuracy Rate",
+    "tags": ["n8n", "Anthropic Claude", "OCR", "Finance"],
+    "images": [
+        "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Workflow%20Automation%202%20-%20n8n.png?raw=true",
+        "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Workflow%20Automation%20-%20n8n.png?raw=true"
+    ],
+    "video_embed": "",
+    "workflow_download": "https://github.com/0bl1vyx/n8n-portfolio/blob/main/json/Invoice%20Workflow.json",
+    "description": "An end-to-end financial system that turns raw invoice PDFs/Images into validated, structured Excel data using Claude 3.5 Sonnet.",
+    "full_details": {
+      "problem": "The client was manually typing data from hundreds of invoices into Excel. It was boring, time-consuming, and human errors (like typos in tax numbers) were causing accounting issues.",
+      "solution": "I built a dual-workflow system. First, it uses OCR to read scanned images and PDF extractors for digital files. The data is passed to Anthropic's Claude model to intelligently map fields to a JSON schema. Crucially, I added a code layer to mathematically validate GSTIN numbers and dates before entry.",
+      "tech_stack": ["n8n", "Anthropic Claude", "OCR Space", "Google Sheets", "Google Drive"],
+      "result": "Reduced hours of manual labor to minutes. Invoices are now automatically sorted into 'Valid' or 'Error' folders on Drive, with clean data synced to the master sheet."
+    }
+  },
+  {
     "id": "job-hunter-automation",
     "title": "Automated Job Hunter (CA/Tally)",
     "type": "Pro Bono / Friend",
