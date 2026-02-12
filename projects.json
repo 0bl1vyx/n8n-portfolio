@@ -8,8 +8,8 @@
     "images": [
         "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Saas%20Lead%20Finder%20(1st%20Automation)%20-%20n8n.png?raw=true"
     ],
-    "video_embed": "",
-    "workflow_download": "",
+    "video_embed": "https://www.linkedin.com/feed/update/urn:li:activity:7421596714945617921/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFL2oWAB58-EH5-sBVT4X9X4eNz0T2bxmyw",
+    "workflow_download": "https://github.com/0bl1vyx/n8n-portfolio/blob/main/json/Saas%20Lead%20Finder%20(1st%20Automation).json",
     "description": "A multi-agent system that finds, qualifies, and enriches high-ticket agency leads based on tech stack and location.",
     "full_details": {
       "problem": "The client provides web development for Amazon PPC SaaS companies but needed a very specific profile: US/UK based, 50+ employees, and running on outdated WordPress sites. Finding this specific combination manually was impossible.",
