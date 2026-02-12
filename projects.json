@@ -28,7 +28,7 @@
         "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Arfajul%20-%20n8n.png?raw=true"
     ],
     "video_embed": "",
-    "workflow_download": "",
+    "workflow_download": "https://github.com/0bl1vyx/n8n-portfolio/blob/main/json/Arfajul.json",
     "description": "An automated recruitment assistant that scans the web for specific niche accounting roles in Kolkata.",
     "full_details": {
       "problem": "My friend was wasting hours manually searching for specific 'Tally Accountant' and 'CA' roles in Kolkata. He needed to focus on applying, not searching.",
@@ -47,7 +47,7 @@
         "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Bug%20Bounty%20Programs%20Finder%20-%20n8n.png?raw=true"
     ],
     "video_embed": "",
-    "workflow_download": "",
+    "workflow_download": "https://github.com/0bl1vyx/n8n-portfolio/blob/main/json/Bug%20Bounty%20Programs%20Finder.json",
     "description": "A reconnaissance tool for ethical hackers that identifies new, self-hosted bug bounty programs automatically.",
     "full_details": {
       "problem": "As a former bug hunter, I knew the pain of finding good programs. Most hunters spend more time looking for targets than actually hacking.",
@@ -66,7 +66,7 @@
         "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Form%20Response%20-%20n8n.png?raw=true"
     ],
     "video_embed": "",
-    "workflow_download": "",
+    "workflow_download": "https://github.com/0bl1vyx/n8n-portfolio/blob/main/json/Form%20Response.json",
     "description": "A webhook-based system that drafts and sends hyper-personalized emails instantly after a user fills a form.",
     "full_details": {
       "problem": "A client wanted to impress leads filling out their Framer website form. Standard auto-responders felt robotic and cold.",
@@ -85,7 +85,7 @@
         "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Lead%20Finder%20Gym%20Landing%20Pages%20-%20n8n.png?raw=true"
     ],
     "video_embed": "",
-    "workflow_download": "",
+    "workflow_download": "https://github.com/0bl1vyx/n8n-portfolio/blob/main/json/Lead%20Finder%20Gym%20Landing%20Pages.json",
     "description": "A Google Maps scraper that identifies local businesses without websites for web development pitching.",
     "full_details": {
       "problem": "My client sells web development services to gyms in Kolkata but couldn't easily find which ones didn't have a website.",
@@ -104,7 +104,7 @@
         "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Personal%20Agent%20-%20n8n.png?raw=true"
     ],
     "video_embed": "",
-    "workflow_download": "",
+    "workflow_download": "https://github.com/0bl1vyx/n8n-portfolio/blob/main/json/Personal%20Agent.json",
     "description": "My personal 'Second Brain'. An AI agent equipped with tools to manage my life, code, and scheduling.",
     "full_details": {
       "problem": "I needed a central AI interface that knew *me*—my context, my files, and my preferences—unlike generic ChatGPT.",
