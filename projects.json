@@ -9,6 +9,8 @@
         "https://placehold.co/1200x800/111827/4ade80?text=Main+Workflow+Map",
         "https://placehold.co/1200x800/111827/4ade80?text=Google+Sheets+Output"
     ],
+    "video_embed": "https://www.youtube.com/embed/dQw4w9WgXcQ", 
+    "workflow_download": "https://github.com/0bl1vyx",
     "description": "Automated system that identifies high-value prospects by scanning agency websites for outdated tech stacks.",
     "full_details": {
       "problem": "The client was burning 15 hours a week manually checking websites to find sales leads. It was slow, boring, and prone to human error.",
@@ -27,6 +29,8 @@
         "https://placehold.co/1200x800/111827/4ade80?text=Chrome+Extension+UI",
         "https://placehold.co/1200x800/111827/4ade80?text=JSON+Data+Structure"
     ],
+    "video_embed": "",
+    "workflow_download": "",
     "description": "A stealth extraction tool that bypasses anti-bot measures to collect public profile data securely.",
     "full_details": {
       "problem": "Standard scraping tools get blocked by LinkedIn immediately. My client needed market data but couldn't get it reliably.",
@@ -45,6 +49,8 @@
         "https://placehold.co/1200x800/111827/4ade80?text=AI+Vision+Logic",
         "https://placehold.co/1200x800/111827/4ade80?text=Email+Trigger+Setup"
     ],
+    "video_embed": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "workflow_download": "https://github.com/0bl1vyx",
     "description": "An AI agent that reads incoming invoice PDFs (even handwritten ones) and updates the accounting software.",
     "full_details": {
         "problem": "A business owner was drowning in PDF invoices. OCR tools couldn't read the handwritten notes, leading to hours of data entry.",
