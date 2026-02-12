@@ -1,22 +1,21 @@
 [
   {
-    "id": "amazon-lead-gen",
-    "title": "Amazon PPC Lead System",
+    "id": "saas-lead-hunter",
+    "title": "Amazon PPC Lead Hunter",
     "type": "Client Project",
-    "metric": "15 Hrs/Week Saved",
-    "tags": ["n8n", "Web Scraping", "CRM"],
+    "metric": "100% Automated Qual.",
+    "tags": ["n8n", "AI Agents", "Scraping", "OpenRouter"],
     "images": [
-        "https://placehold.co/1200x800/111827/4ade80?text=Main+Workflow+Map",
-        "https://placehold.co/1200x800/111827/4ade80?text=Google+Sheets+Output"
+        "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Saas%20Lead%20Finder%20(1st%20Automation)%20-%20n8n.png?raw=true"
     ],
-    "video_embed": "https://www.youtube.com/embed/dQw4w9WgXcQ", 
-    "workflow_download": "https://github.com/0bl1vyx",
-    "description": "Automated system that identifies high-value prospects by scanning agency websites for outdated tech stacks.",
+    "video_embed": "",
+    "workflow_download": "",
+    "description": "A multi-agent system that finds, qualifies, and enriches high-ticket agency leads based on tech stack and location.",
     "full_details": {
-      "problem": "The client was burning 15 hours a week manually checking websites to find sales leads. It was slow, boring, and prone to human error.",
-      "solution": "I built a self-hosted n8n workflow. It accepts a list of domains, scrapes the HTML, uses Regex to spot outdated WordPress versions, and auto-qualifies the lead.",
-      "tech_stack": ["n8n", "Puppeteer", "Regex", "Google Sheets"],
-      "result": "The client now wakes up to a list of qualified leads every Monday. Zero manual checking required."
+      "problem": "The client provides web development for Amazon PPC SaaS companies but needed a very specific profile: US/UK based, 50+ employees, and running on outdated WordPress sites. Finding this specific combination manually was impossible.",
+      "solution": "I architected an n8n workflow that acts as a researcher. It starts with advanced Google Dorks to find candidates, then scrapes the site content to Markdown. An LLM Agent analyzes the text to verify 'Amazon PPC' services and US/UK location. Finally, it fingerprints the WordPress version and finds the CEO's LinkedIn profile for outreach.",
+      "tech_stack": ["n8n", "OpenRouter", "Google Search API", "Apify", "Google Sheets"],
+      "result": "Delivered a fully automated pipeline. The client now gets a daily list of 'perfect match' leads with CEO contact info and personalized outreach drafts ready to send."
     }
   },
   {
