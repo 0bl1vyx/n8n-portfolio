@@ -11,14 +11,13 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    colors: { accent: { 400: '#34d399', 500: '#10b981' }, bg: { main: '#0a0a0a', card: '#111111', border: '#262626' } }
+                    colors: { accent: { 400: '#34d399', 500: '#10b981', 600: '#059669' }, bg: { main: '#0a0a0a', card: '#111111', border: '#262626' } }
                 }
             }
         }
     </script>
     <style>
         body { background-color: #0a0a0a; color: #d4d4d8; }
-        /* Smooth fade for lightbox */
         .lightbox { transition: opacity 0.3s ease; }
     </style>
 </head>
@@ -70,12 +69,37 @@
                         <ul id="tech-list" class="space-y-3 text-sm text-gray-300"></ul>
                     </div>
                     
-                    <a href="mailto:priyodas567@gmail.com" class="block w-full py-4 bg-white text-black text-center font-bold rounded-lg hover:bg-gray-200 transition">
-                        Need something similar?
-                    </a>
+                    <div class="flex flex-col gap-3">
+                        <a href="mailto:priyodas567@gmail.com" class="w-full py-4 bg-accent-600 hover:bg-accent-500 text-white text-center font-bold rounded-lg transition-all shadow-[0_4px_14px_0_rgba(34,197,94,0.39)]">
+                            Hire Me to Build This
+                        </a>
+                        
+                        <a id="btn-download" href="#" target="_blank" class="hidden w-full py-4 border border-bg-border text-gray-400 hover:text-white hover:border-white transition-colors text-center font-mono text-sm rounded-lg flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            View Workflow JSON
+                        </a>
+                    </div>
                 </div>
 
                 <div class="lg:col-span-8 space-y-12 order-1 lg:order-2">
+                    
+                    <div id="video-container" class="mb-12 hidden">
+                        <div class="relative w-full pb-[56.25%] bg-bg-card border border-bg-border rounded-xl overflow-hidden shadow-[0_0_30px_-10px_rgba(74,222,128,0.1)]">
+                            <iframe 
+                                id="p-video" 
+                                class="absolute top-0 left-0 w-full h-full" 
+                                src="" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                        <div class="flex justify-between items-center mt-3">
+                            <span class="text-xs font-mono text-accent-500 animate-pulse">● LIVE SYSTEM DEMO</span>
+                            <span class="text-xs font-mono text-gray-500">Watch full walkthrough</span>
+                        </div>
+                    </div>
+
                     <section>
                         <h2 class="text-xl text-white font-bold mb-4">The Challenge</h2>
                         <p id="p-problem" class="text-gray-400 leading-relaxed text-lg font-light"></p>
@@ -111,8 +135,8 @@
             const img = document.getElementById('lightbox-img');
             img.src = src;
             lb.classList.remove('hidden');
-            setTimeout(() => lb.classList.remove('opacity-0'), 10); // Fade in
-            document.body.style.overflow = 'hidden'; // Stop background scrolling
+            setTimeout(() => lb.classList.remove('opacity-0'), 10);
+            document.body.style.overflow = 'hidden';
         }
 
         function closeLightbox() {
@@ -136,6 +160,7 @@
 
                 if (!project) return;
 
+                // TEXT FIELDS
                 document.getElementById('p-title').innerText = project.title;
                 document.getElementById('p-desc').innerText = project.description;
                 document.getElementById('p-metric').innerText = project.metric;
@@ -143,15 +168,11 @@
                 document.getElementById('p-solution').innerText = project.full_details.solution;
                 document.getElementById('p-result').innerText = project.full_details.result;
 
-                // Handle Images (Array vs String fallback)
+                // IMAGES
                 let images = Array.isArray(project.images) ? project.images : [project.image];
-                
-                // Set Main Image
                 if(images.length > 0) {
                     document.getElementById('p-main-image').src = images[0];
                 }
-
-                // Generate Gallery for extra images
                 if (images.length > 1) {
                     const gallery = document.getElementById('gallery-grid');
                     images.slice(1).forEach(imgSrc => {
@@ -163,16 +184,36 @@
                     });
                 }
 
+                // TAGS
                 const tagsContainer = document.getElementById('tags-container');
                 project.tags.forEach(tag => {
                     tagsContainer.innerHTML += `<span class="text-xs font-mono text-accent-400 border border-accent-500/20 bg-accent-500/10 px-2 py-1 rounded">#${tag}</span>`;
                 });
 
+                // TECH STACK
                 const techList = document.getElementById('tech-list');
                 project.full_details.tech_stack.forEach(tech => {
                     techList.innerHTML += `<li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-accent-500 rounded-full"></span>${tech}</li>`;
                 });
 
+                // --- NEW FEATURES ---
+                
+                // VIDEO EMBED
+                if (project.video_embed && project.video_embed !== "") {
+                    const videoContainer = document.getElementById('video-container');
+                    const videoFrame = document.getElementById('p-video');
+                    videoFrame.src = project.video_embed;
+                    videoContainer.classList.remove('hidden');
+                }
+
+                // DOWNLOAD/GITHUB BUTTON
+                if (project.workflow_download && project.workflow_download !== "") {
+                    const btn = document.getElementById('btn-download');
+                    btn.href = project.workflow_download;
+                    btn.classList.remove('hidden');
+                }
+
+                // REVEAL CONTENT
                 document.getElementById('loading').classList.add('hidden');
                 const content = document.getElementById('project-content');
                 content.classList.remove('hidden');
