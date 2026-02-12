@@ -1,0 +1,429 @@
+{
+  "name": "Arfajul",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        -112
+      ],
+      "id": "f72e094a-f96c-4960-9385-74a799854355",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key"
+            },
+            {
+              "name": "cx"
+            },
+            {
+              "name": "q",
+              "value": "=\"Distributors\" in Burrabazar Kolkata"
+            },
+            {
+              "name": "num",
+              "value": "10"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.start_index }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "abd81fba-faf8-416e-95e3-621b94e7dc0a",
+      "name": "Google Search"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -48,
+        -112
+      ],
+      "id": "0996ec90-9c6c-4e62-8300-8f0fcff3e345",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const resultsCount = 91; // Total results you want\nconst items = [];\n\nfor (let i = 51; i <= resultsCount; i += 10) {\n  items.push({ json: { start_index: i } });\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        -112
+      ],
+      "id": "64779b2f-1682-4ef7-a60b-77e4a4fa800d",
+      "name": "Search Page Index"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.9"
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.google.com/"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 3
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -144,
+        176
+      ],
+      "id": "f42dc8de-451e-496f-a9a9-c75a8f2be11a",
+      "name": "HTTP Request",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Define a \"Blocklist\" of directory/social sites to ignore.\n// These sites are hard to scrape or won't have the owner's email on the homepage.\nconst ignoreDomains = [\n  \"linkedin.com\",\n  \"facebook.com\",\n  \"justdial.com\",\n  \"sulekha.com\",\n  \"scribd.com\",\n  \"advisorkhoj.com\",\n  \"thinkingbridge.in\",\n  \"instagram.com\",\n  \"google.com\"\n];\n\nlet cleanLinks = [];\n\n// 2. Loop through the input data\nfor (const item of items) {\n  // Access the Google Search results array\n  const googleResults = item.json.items || [];\n\n  for (const result of googleResults) {\n    const url = result.link;\n\n    // 3. Check if the URL contains any of the \"ignored\" domains\n    const isJunk = ignoreDomains.some(domain => url.includes(domain));\n\n    // 4. If it's a REAL website, add it to our list\n    if (url && !isJunk) {\n      cleanLinks.push({\n        json: {\n          title: result.title,\n          url: url\n        }\n      });\n    }\n  }\n}\n\n// 5. Remove Duplicates (Since your input had the same data repeated 3 times)\nconst uniqueLinks = cleanLinks.filter((value, index, self) =>\n  index === self.findIndex((t) => (\n    t.json.url === value.json.url\n  ))\n);\n\nreturn uniqueLinks;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        176
+      ],
+      "id": "abd92524-945e-46f9-b3c2-dce37d9cf2c4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert Data Extraction Specialist for recruitment and lead generation.  Your goal is to extract contact details for potential employers offering \"Accountant\" or \"Tally Prime\" jobs.  **INPUT DATA:** You will receive raw text, HTML, or search result snippets containing business listings.  **YOUR TASK:** Analyze the input and extract a list of companies and their contact emails.  **STRICT EXTRACTION RULES:** 1. **Target Entities:** Extract the \"Company Name\" and \"Email Address\". 2. **Name Inference:** - If a Company Name is clearly stated, use it.    - If no Company Name is found but a Chartered Accountant's name is present (e.g., \"CA Amit Kumar\"), use that as the Company Name.    - If neither is found, check the email domain (e.g., for \"info@sharmatraders.com\", use \"Sharma Traders\" as the name).    - If absolutely no name can be found, use \"Unknown Firm\". 3. **Email Cleaning:** - Ignore \"junk\" emails related to website infrastructure (e.g., ignore emails containing: 'sentry', 'noreply', 'wix', 'godaddy', 'domain-contact', 'abuse@', 'hostmaster@').    - Prioritize emails that look like direct contacts (e.g., 'hr@', 'info@', 'careers@', or personal names like 'amit@'). 4. **Formatting:**    - If a company has multiple emails, join them with a comma (e.g., \"hr@abc.com, info@abc.com\").  **OUTPUT FORMAT:** You must output **ONLY a raw JSON array** of objects. Do not include Markdown formatting (like ```json), introduction text, or explanations.   The JSON structure must be exactly: [   {     \"company\": \"Company Name Here\",     \"email\": \"extracted@email.com\"   } ]"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        400,
+        176
+      ],
+      "id": "dbcc1f07-e4d2-4b7c-a5ff-88756ad9a513",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        400,
+        432
+      ],
+      "id": "4dccae48-ed1f-4f39-93a0-0dbda5a90377",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Bm6EJZVpvAJExJCj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let allLeads = [];\n\n// 1. Loop through the AI output\nfor (const item of items) {\n  try {\n    let rawText = item.json.text;\n\n    // Safety: Remove any potential Markdown code blocks (```json) just in case\n    if (rawText) {\n      rawText = rawText.replace(/```json/g, \"\").replace(/```/g, \"\").trim();\n      \n      // 2. Parse the text string into real JSON data\n      const parsedData = JSON.parse(rawText);\n\n      // 3. Add these leads to our master list\n      if (Array.isArray(parsedData)) {\n        allLeads.push(...parsedData);\n      }\n    }\n  } catch (error) {\n    // If one block fails, we just skip it\n    continue;\n  }\n}\n\n// 4. Remove Duplicates (based on Email)\n// Sometimes the search finds the same guy twice. We don't want duplicate rows.\nconst uniqueLeads = [];\nconst seenEmails = new Set();\n\nfor (const lead of allLeads) {\n  if (lead.email && !seenEmails.has(lead.email)) {\n    seenEmails.add(lead.email);\n    \n    // Format for n8n output\n    uniqueLeads.push({\n      json: {\n        \"Company Name\": lead.company,\n        \"Email Address\": lead.email,\n        \"Date Added\": new Date().toISOString().split('T')[0], // Adds today's date\n        \"Status\": \"Ready\"\n      }\n    });\n  }\n}\n\nreturn uniqueLeads;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        176
+      ],
+      "id": "9d198e72-099c-43ce-8554-0bc842e64141",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "11t9Y9tl-aYJMh07SvIDgR0chLVdxnF13BZEKu_mvs4k",
+          "mode": "list",
+          "cachedResultName": "Tally Accountant Emails For Arfajul",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11t9Y9tl-aYJMh07SvIDgR0chLVdxnF13BZEKu_mvs4k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11t9Y9tl-aYJMh07SvIDgR0chLVdxnF13BZEKu_mvs4k/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company Name": "={{ $json['Company Name'] }}",
+            "Email Address": "={{ $json['Email Address'] }}",
+            "Date Added": "={{ $json['Date Added'] }}",
+            "Status": "={{ $json.Status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Added",
+              "displayName": "Date Added",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        992,
+        176
+      ],
+      "id": "9dfb1363-f445-4e59-bedd-4d6df1cd6a72",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HbCltqZ2rO3Ms15o",
+          "name": "CryptS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        128,
+        160
+      ],
+      "id": "9c0b418f-e8c7-4fc4-9166-139ac4a585ff",
+      "name": "Loop Over Items"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search Page Index",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Page Index": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Search": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "20d5f2c6-aee0-46e1-844c-b18fdceb2f29",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "91652ecb94261b9d69ecb1e2db50e5b488590a3a9dfd5e59a68c0904a666024b"
+  },
+  "id": "cHQgXrRaxCCX6nE0",
+  "tags": []
+}
