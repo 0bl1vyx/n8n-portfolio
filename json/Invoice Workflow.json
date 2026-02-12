@@ -1,0 +1,1741 @@
+{
+  "name": "Invoice Workflow - Batch Fix (Loop & Error Handling)",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Invoice Automation - Upload Invoice",
+        "formDescription": "Upload invoice files in PDF, PNG, JPG, or other image formats for automated extraction and validation",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Invoice File",
+              "fieldType": "file",
+              "fieldName": "Invoice_File",
+              "acceptFileTypes": ".pdf,.png,.jpg,.jpeg",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Process Invoice"
+        }
+      },
+      "id": "7b25aff4-8245-4946-a193-d9c8d9b5090f",
+      "name": "Invoice Upload Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -9264,
+        432
+      ],
+      "webhookId": "830765e9-0754-4ede-89ac-8547450abb87"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "fileName",
+              "value": "={{ $json['Invoice_File'][0].filename }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "mimeType",
+              "value": "={{ $json['Invoice_File'][0].mimetype }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "fileSize",
+              "value": "={{ $json['Invoice_File'][0].size }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "9923de97-7f75-4f81-a3f4-069bb0c5a97e",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -9040,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $binary.data.mimeType }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "PDF Files"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $binary.data.mimeType }}",
+                    "rightValue": "image/",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image Files"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7bd2d685-6e12-48b6-97c7-a914bd61afc2",
+      "name": "Route by File Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -8592,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {
+          "joinPages": true,
+          "keepSource": "both"
+        }
+      },
+      "id": "9bc9c04c-e4fa-46f0-a47a-06b7c110daa9",
+      "name": "Extract Text from PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -8144,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ocr.space/parse/image",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "isOverlayRequired",
+              "value": "false"
+            },
+            {
+              "name": "detectOrientation",
+              "value": "true"
+            },
+            {
+              "name": "scale",
+              "value": "true"
+            },
+            {
+              "name": "OCREngine",
+              "value": "2"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "60ea1e8f-998a-4a81-a0ac-b1496a7c8631",
+      "name": "OCR for Images",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -8368,
+        336
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "LLLPjD0sxyhccxWt",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.ParsedResults && $json.ParsedResults[0] && $json.ParsedResults[0].ParsedText ? $json.ParsedResults[0].ParsedText : ($json.text || 'No text extracted from document') }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an AI Invoice Data Extractor. Extract invoice data and return ONLY valid JSON matching the required schema.\n\nIMPORTANT RULES:\n- Extract data from the invoice text provided\n- Return ONLY the structured JSON object - no explanations, no conversational text\n- If a field is not found in the invoice, use null\n- All dates must be in YYYY-MM-DD format\n- All numbers must be numeric values without currency symbols\n- For Status field, set to 'Pending'\n- For Issue_Description, set to null\n- DO NOT perform calculations or validations - just extract the data as shown in the invoice\n- Extract numbers exactly as they appear - do not verify math\n\nFIELDS TO EXTRACT:\n\nInvoice_Metadata:\n- Vendor_Name: Company/vendor name\n- Vendor_GSTIN: 15-character GST identification number (if present)\n- Invoice_Number: Invoice/bill number\n- Invoice_Date: Date in YYYY-MM-DD format\n- PO_Number: Purchase order number (if present)\n- Currency: Currency code (e.g., INR, USD)\n- Status: Set to 'Pending'\n- Issue_Description: Set to null\n\nFinancial_Summary:\n- Subtotal: Taxable amount before tax\n- CGST: Central GST amount (if present)\n- SGST: State GST amount (if present)\n- IGST: Integrated GST amount (if present)\n- Total_GST: Total tax amount\n- Total_Invoice_Amount: Final total amount\n\nLine_Items (array of items):\n- Description: Item/service description\n- HSN_SAC: HSN or SAC code (if present)\n- Quantity: Quantity\n- Unit_Price: Price per unit\n- Taxable_Value: Taxable amount for line\n- GST_Rate: Tax percentage\n- GST_Amount: Tax amount for line\n- Line_Total: Total for line item\n\nClassification:\n- Vendor_Category: Categorize as Services, Goods, Utilities, or Professional Fees\n- Invoice_Month: Extract month as YYYY-MM\n- Financial_Year: Format as YYYY-YY (e.g., 2024-25)\n\nEvidence:\n- Invoice_Number_Reference: Text snippet showing invoice number location\n- Invoice_Date_Reference: Text snippet showing date location\n- Total_Amount_Reference: Text snippet showing total location\n- GST_Reference: Text snippet showing tax breakdown\n\nEXTRACT THE DATA AND RETURN THE JSON OBJECT.",
+          "maxIterations": 5,
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "b6b73dd1-891f-44c3-84df-42132ce2cd6c",
+      "name": "Invoice Extraction AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -7424,
+        -64
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Extract the invoice data from AI Agent output\nconst invoiceData = $input.item.json.output || {};\n\n// CRITICAL: Preserve the filename from the input item\n// The merge node should have preserved it in $input.item.json.fileName\nconst originalFileName = $input.item.json.fileName || 'unknown_invoice.pdf';\n\n// GSTIN Validation Function\nfunction validateGSTIN(gstin) {\n  if (!gstin) return { valid: false, message: 'GSTIN is missing' };\n  \n  // Indian GSTIN format: 15 characters\n  // Format: 2 digits (state) + 10 chars (PAN) + 1 char (entity) + 1 char (Z by default) + 1 check digit\n  const gstinRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;\n  \n  if (!gstinRegex.test(gstin)) {\n    return { valid: false, message: 'GSTIN format is invalid' };\n  }\n  \n  return { valid: true, message: 'GSTIN is valid' };\n}\n\n// Date Validation Function\nfunction validateDate(dateStr) {\n  if (!dateStr) return { valid: false, message: 'Date is missing' };\n  \n  // Check if date is in YYYY-MM-DD format\n  const dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;\n  if (!dateRegex.test(dateStr)) {\n    return { valid: false, message: 'Date format should be YYYY-MM-DD' };\n  }\n  \n  const date = new Date(dateStr);\n  if (isNaN(date.getTime())) {\n    return { valid: false, message: 'Invalid date value' };\n  }\n  \n  return { valid: true, message: 'Date is valid' };\n}\n\n// Financial Validation Function\nfunction validateFinancials(financial) {\n  const issues = [];\n  \n  // Check if critical amounts are present\n  if (!financial.Total_Invoice_Amount) {\n    issues.push('Total Invoice Amount is missing');\n  }\n  \n  // Validate GST calculation: CGST + SGST OR IGST should equal Total_GST\n  const cgst = parseFloat(financial.CGST) || 0;\n  const sgst = parseFloat(financial.SGST) || 0;\n  const igst = parseFloat(financial.IGST) || 0;\n  const totalGst = parseFloat(financial.Total_GST) || 0;\n  \n  const calculatedGst = (cgst + sgst) || igst;\n  const gstDifference = Math.abs(calculatedGst - totalGst);\n  \n  if (gstDifference > 0.01) {\n    issues.push(`GST calculation mismatch: CGST(${cgst}) + SGST(${sgst}) or IGST(${igst}) ≠ Total GST(${totalGst})`);\n  }\n  \n  // Validate total: Subtotal + Total_GST should equal Total_Invoice_Amount\n  const subtotal = parseFloat(financial.Subtotal) || 0;\n  const totalAmount = parseFloat(financial.Total_Invoice_Amount) || 0;\n  const calculatedTotal = subtotal + totalGst;\n  const totalDifference = Math.abs(calculatedTotal - totalAmount);\n  \n  if (totalDifference > 0.01) {\n    issues.push(`Total calculation mismatch: Subtotal(${subtotal}) + Total GST(${totalGst}) ≠ Total Amount(${totalAmount})`);\n  }\n  \n  return issues;\n}\n\n// Ensure Invoice_Metadata exists\nif (!invoiceData.Invoice_Metadata) invoiceData.Invoice_Metadata = {};\n\n// Perform validations\nconst gstinValidation = validateGSTIN(invoiceData.Invoice_Metadata.Vendor_GSTIN);\nconst dateValidation = validateDate(invoiceData.Invoice_Metadata.Invoice_Date);\nconst financialIssues = validateFinancials(invoiceData.Financial_Summary || {});\n\n// Check for missing critical fields\nconst missingFields = [];\nif (!invoiceData.Invoice_Metadata.Invoice_Number) missingFields.push('Invoice Number');\nif (!invoiceData.Invoice_Metadata.Invoice_Date) missingFields.push('Invoice Date');\nif (!invoiceData.Invoice_Metadata.Vendor_GSTIN) missingFields.push('Vendor GSTIN');\nif (!invoiceData.Financial_Summary?.Total_Invoice_Amount) missingFields.push('Total Invoice Amount');\n\n// Determine overall status\nlet validationStatus = 'OK';\nlet validationIssues = [];\n\nif (!gstinValidation.valid) {\n  validationIssues.push(gstinValidation.message);\n  validationStatus = 'Error';\n}\n\nif (!dateValidation.valid) {\n  validationIssues.push(dateValidation.message);\n  validationStatus = 'Error';\n}\n\nif (financialIssues.length > 0) {\n  validationIssues.push(...financialIssues);\n  validationStatus = 'Error';\n}\n\nif (missingFields.length > 0) {\n  validationIssues.push(`Missing critical fields: ${missingFields.join(', ')}`);\n  if (validationStatus === 'OK') validationStatus = 'Warning';\n}\n\n// Update the invoice data with validation results\ninvoiceData.Invoice_Metadata.Status = validationStatus;\ninvoiceData.Invoice_Metadata.Issue_Description = validationIssues.length > 0 \n  ? validationIssues.join('; ') \n  : 'All validations passed';\n\n// Save filename to metadata AND root for later nodes\ninvoiceData.Invoice_Metadata.Invoice_File_Name = originalFileName;\ninvoiceData.fileName = originalFileName;\n\n// Add validation metadata\ninvoiceData.Validation = {\n  GSTIN_Valid: gstinValidation.valid,\n  Date_Valid: dateValidation.valid,\n  Financial_Valid: financialIssues.length === 0,\n  Missing_Fields: missingFields,\n  Validation_Timestamp: new Date().toISOString()\n};\n\nreturn { json: invoiceData };"
+      },
+      "id": "6ed84527-6ecc-4e3c-83f0-fa71af86880e",
+      "name": "GSTIN and Date Validation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6624,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1SrVrqTKtcO14O3HWhQ2zSrXfYj60zhk4kARblTp9vtU",
+          "mode": "list",
+          "cachedResultName": "Invoice",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SrVrqTKtcO14O3HWhQ2zSrXfYj60zhk4kARblTp9vtU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SrVrqTKtcO14O3HWhQ2zSrXfYj60zhk4kARblTp9vtU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Vendor_Name": "={{ $json.Vendor_Name ?? '' }}",
+            "Vendor_GSTIN": "={{ $json.Vendor_GSTIN ?? '' }}",
+            "Invoice_Number": "={{ $json.Invoice_Number ?? '' }}",
+            "Invoice_Date": "={{ $json.Invoice_Date ?? '' }}",
+            "PO_Number": "={{ $json.PO_Number ?? '' }}",
+            "Currency": "={{ $json.Currency ?? '' }}",
+            "Subtotal": "={{ $json.Subtotal ?? '' }}",
+            "CGST": "={{ $json.CGST ?? '' }}",
+            "SGST": "={{ $json.SGST ?? '' }}",
+            "IGST": "={{ $json.IGST ?? '' }}",
+            "Total_GST": "={{ $json.Total_GST ?? '' }}",
+            "Total_Invoice_Amount": "={{ $json.Total_Invoice_Amount ?? '' }}",
+            "Vendor_Category": "={{ $json.Vendor_Category ?? '' }}",
+            "Invoice_Month": "={{ $json.Invoice_Month ?? '' }}",
+            "Financial_Year": "={{ $json.Financial_Year ?? '' }}",
+            "Status": "={{ $json.Status ?? '' }}",
+            "Processed_Date": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Vendor_Name",
+              "displayName": "Vendor_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Vendor_GSTIN",
+              "displayName": "Vendor_GSTIN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice_Number",
+              "displayName": "Invoice_Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice_Date",
+              "displayName": "Invoice_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "PO_Number",
+              "displayName": "PO_Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Subtotal",
+              "displayName": "Subtotal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CGST",
+              "displayName": "CGST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "SGST",
+              "displayName": "SGST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "IGST",
+              "displayName": "IGST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total_GST",
+              "displayName": "Total_GST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total_Invoice_Amount",
+              "displayName": "Total_Invoice_Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Vendor_Category",
+              "displayName": "Vendor_Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice_Month",
+              "displayName": "Invoice_Month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Financial_Year",
+              "displayName": "Financial_Year",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Processed_Date",
+              "displayName": "Processed_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "ab299500-7548-4330-8748-1a50c75cab39",
+      "name": "Store Valid Invoices",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3712,
+        -16
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5r9XfLHzCs7BjLVg",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1SrVrqTKtcO14O3HWhQ2zSrXfYj60zhk4kARblTp9vtU",
+          "mode": "list",
+          "cachedResultName": "Invoice",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SrVrqTKtcO14O3HWhQ2zSrXfYj60zhk4kARblTp9vtU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 698618677,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SrVrqTKtcO14O3HWhQ2zSrXfYj60zhk4kARblTp9vtU/edit#gid=698618677"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Vendor_Name": "={{ $json.Vendor_Name ?? 'NULL' }}",
+            "Vendor_GSTIN": "={{ $json.Vendor_GSTIN ?? 'NULL' }}",
+            "Invoice_Number": "={{ $json.Invoice_Number ?? 'NULL' }}",
+            "Invoice_Date": "={{ $json.Invoice_Date ?? 'NULL' }}",
+            "Total_Invoice_Amount": "={{ $json.Total_Invoice_Amount ?? 'NULL' }}",
+            "Status": "={{ $json.Status ?? 'NULL' }}",
+            "Issue_Description": "={{ $json.Issue_Description ?? 'NULL' }}",
+            "Full_Data_JSON": "={{ JSON.stringify($json) }}",
+            "Processed_Date": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Vendor_Name",
+              "displayName": "Vendor_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Vendor_GSTIN",
+              "displayName": "Vendor_GSTIN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice_Number",
+              "displayName": "Invoice_Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice_Date",
+              "displayName": "Invoice_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total_Invoice_Amount",
+              "displayName": "Total_Invoice_Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Issue_Description",
+              "displayName": "Issue_Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Full_Data_JSON",
+              "displayName": "Full_Data_JSON",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Processed_Date",
+              "displayName": "Processed_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "6d4b5222-036f-4cdc-a68a-b955108b318c",
+      "name": "Store Error Invoices for Review",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3712,
+        272
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5r9XfLHzCs7BjLVg",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "message",
+              "value": "Invoice processed successfully and stored in the database",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "invoice_number",
+              "value": "={{ $json.Invoice_Metadata?.Invoice_Number || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "vendor_name",
+              "value": "={{ $json.Invoice_Metadata?.Vendor_Name || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "total_amount",
+              "value": "={{ $json.Financial_Summary?.Total_Invoice_Amount || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "id-6",
+              "name": "validation_status",
+              "value": "={{ $json.Invoice_Metadata?.Status || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-7",
+              "name": "drive_url",
+              "value": "={{ $json.driveFileUrl || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-8",
+              "name": "drive_folder",
+              "value": "={{ $json.driveFolderName || 'N/A' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "47f2b2b2-90da-45da-8137-067a07e43c75",
+      "name": "Format Success Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3488,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "message",
+              "value": "Invoice validation failed. Please review the issues and resubmit.",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "invoice_number",
+              "value": "={{ $json.Invoice_Metadata?.Invoice_Number || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "vendor_name",
+              "value": "={{ $json.Invoice_Metadata?.Vendor_Name || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "validation_status",
+              "value": "={{ $json.Invoice_Metadata?.Status || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-6",
+              "name": "issues",
+              "value": "={{ $json.Invoice_Metadata?.Issue_Description || 'No details available' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-7",
+              "name": "drive_url",
+              "value": "={{ $json.driveFileUrl || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-8",
+              "name": "drive_folder",
+              "value": "={{ $json.driveFolderName || 'N/A' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0826521e-0bad-418e-972c-c42353f41d09",
+      "name": "Format Error Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3488,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"title\": \"invoice_data\",\n  \"description\": \"Structured invoice data extraction schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"Invoice_Metadata\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"Vendor_Name\": {\"type\": [\"string\", \"null\"]},\n        \"Vendor_GSTIN\": {\"type\": [\"string\", \"null\"]},\n        \"Invoice_Number\": {\"type\": [\"string\", \"null\"]},\n        \"Invoice_Date\": {\"type\": [\"string\", \"null\"]},\n        \"PO_Number\": {\"type\": [\"string\", \"null\"]},\n        \"Currency\": {\"type\": [\"string\", \"null\"]},\n        \"Status\": {\"type\": \"string\"},\n        \"Issue_Description\": {\"type\": [\"string\", \"null\"]}\n      }\n    },\n    \"Financial_Summary\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"Subtotal\": {\"type\": [\"number\", \"null\"]},\n        \"CGST\": {\"type\": [\"number\", \"null\"]},\n        \"SGST\": {\"type\": [\"number\", \"null\"]},\n        \"IGST\": {\"type\": [\"number\", \"null\"]},\n        \"Total_GST\": {\"type\": [\"number\", \"null\"]},\n        \"Total_Invoice_Amount\": {\"type\": [\"number\", \"null\"]}\n      }\n    },\n    \"Line_Items\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"Description\": {\"type\": [\"string\", \"null\"]},\n          \"HSN_SAC\": {\"type\": [\"string\", \"null\"]},\n          \"Quantity\": {\"type\": [\"number\", \"null\"]},\n          \"Unit_Price\": {\"type\": [\"number\", \"null\"]},\n          \"Taxable_Value\": {\"type\": [\"number\", \"null\"]},\n          \"GST_Rate\": {\"type\": [\"number\", \"null\"]},\n          \"GST_Amount\": {\"type\": [\"number\", \"null\"]},\n          \"Line_Total\": {\"type\": [\"number\", \"null\"]}\n        }\n      }\n    },\n    \"Classification\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"Vendor_Category\": {\"type\": [\"string\", \"null\"]},\n        \"Invoice_Month\": {\"type\": [\"string\", \"null\"]},\n        \"Financial_Year\": {\"type\": [\"string\", \"null\"]}\n      }\n    },\n    \"Evidence\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"Invoice_Number_Reference\": {\"type\": [\"string\", \"null\"]},\n        \"Invoice_Date_Reference\": {\"type\": [\"string\", \"null\"]},\n        \"Total_Amount_Reference\": {\"type\": [\"string\", \"null\"]},\n        \"GST_Reference\": {\"type\": [\"string\", \"null\"]}\n      }\n    }\n  }\n}",
+        "autoFix": true
+      },
+      "id": "462c3f31-9f7d-41fd-a6b8-ee409c5f1639",
+      "name": "Invoice_JSON_Schema_Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -7216,
+        160
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "2218afad-1cd6-4e47-90fc-5b037a632d77",
+      "name": "Calculator_for_Validation",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -7344,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {
+          "maxTokensToSample": 4096,
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -7472,
+        160
+      ],
+      "id": "ab671008-da1f-40f2-9499-739c56811a9b",
+      "name": "Anthropic_Chat_Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "T02O45sxVEO8P5Kg",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {
+          "maxTokensToSample": 4096,
+          "temperature": 0.1
+        }
+      },
+      "id": "b8835c4e-7c8a-4cd5-a2fd-0ed49776a2c2",
+      "name": "Anthropic Model for Parser",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -7136,
+        368
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "T02O45sxVEO8P5Kg",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize binary field names from Invoice_File or Invoice_File_0, Invoice_File_1, etc.\n// to a consistent 'data' field name for processing\n// Process all items and create separate items for each file\n// Preserve original binary data and prepare for URL generation\n\nconst items = $input.all();\nconst outputItems = [];\n\nfor (const item of items) {\n  // Get all binary data keys\n  const binaryKeys = Object.keys(item.binary || {});\n  \n  // Find all keys that start with 'Invoice_File'\n  const invoiceFileKeys = binaryKeys.filter(key => key.startsWith('Invoice_File'));\n  \n  if (invoiceFileKeys.length > 0) {\n    // Create a separate item for each invoice file\n    for (const invoiceFileKey of invoiceFileKeys) {\n      const originalBinary = item.binary[invoiceFileKey];\n      \n      // Preserve original binary data and add normalized 'data' field\n      const normalizedBinary = {\n        data: originalBinary,\n        [invoiceFileKey]: originalBinary  // Keep original key as well\n      };\n      \n      // Create new item with normalized binary field and enhanced JSON fields\n      outputItems.push({\n        json: {\n          ...item.json,\n          fileName: originalBinary.fileName || originalBinary.filename || 'unknown',\n          mimeType: originalBinary.mimeType || originalBinary.mimetype || 'unknown',\n          fileSize: originalBinary.fileSize || originalBinary.size || 0,\n          publicUrl: null\n        },\n        binary: normalizedBinary\n      });\n    }\n  } else {\n    // No Invoice_File binary found, return item as-is\n    outputItems.push(item);\n  }\n}\n\nreturn outputItems;"
+      },
+      "id": "83b0c5dc-57a1-40d2-b03c-752a71097d71",
+      "name": "Normalize Binary Field Name",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8816,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $json.targetFolderName }}",
+        "returnAll": true,
+        "filter": {
+          "driveId": {
+            "__rl": true,
+            "value": "0APuB_yOleAU8Uk9PVA",
+            "mode": "list",
+            "cachedResultName": "Invoice",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/0APuB_yOleAU8Uk9PVA"
+          },
+          "whatToSearch": "folders"
+        },
+        "options": {}
+      },
+      "id": "6c4ceae8-57e1-4938-bed8-e0281bd00c86",
+      "name": "Search for Folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -6176,
+        16
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "KohLRqftAOrYNrST",
+          "name": "Google Drive account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c6cb4978-6280-46e0-abff-c9f7cf8af268",
+      "name": "Check if Folder Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -5728,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $json.targetFolderName }}",
+        "driveId": {
+          "__rl": true,
+          "value": "0APuB_yOleAU8Uk9PVA",
+          "mode": "list",
+          "cachedResultName": "Invoice",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/0APuB_yOleAU8Uk9PVA"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "root",
+          "mode": "list",
+          "cachedResultName": "/ (Root folder)",
+          "cachedResultUrl": "https://drive.google.com/drive"
+        },
+        "options": {}
+      },
+      "id": "d50157dc-d7cc-4058-885e-5bae389d5245",
+      "name": "Create New Folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -5504,
+        -64
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "KohLRqftAOrYNrST",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the current item data\nconst invoiceData = $input.item.json;\n\n// Get the filename to find the matching file\nconst fileName = invoiceData.fileName || invoiceData.Invoice_Metadata?.Invoice_File_Name;\n\n// Lookup the original file from the start of the workflow\nconst sourceItems = $('Normalize Binary Field Name').all();\nconst originalItem = sourceItems.find(item => item.json.fileName === fileName);\n\nreturn {\n  json: {\n    ...invoiceData,\n    folderId: invoiceData.id,\n    folderName: invoiceData.name\n  },\n  // ✅ FORCE RESTORE BINARY DATA\n  binary: originalItem ? originalItem.binary : $input.item.binary\n};"
+      },
+      "id": "4bac12f5-2ff5-4878-8b21-f41d161213a7",
+      "name": "Set Folder Info from Existing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5056,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the current item data\nconst invoiceData = $input.item.json;\n\n// Get the filename to find the matching file\nconst fileName = invoiceData.fileName || invoiceData.Invoice_Metadata?.Invoice_File_Name;\n\n// Lookup the original file from the start of the workflow\nconst sourceItems = $('Normalize Binary Field Name').all();\nconst originalItem = sourceItems.find(item => item.json.fileName === fileName);\n\nreturn {\n  json: {\n    ...invoiceData,\n    folderId: invoiceData.id,\n    folderName: invoiceData.name\n  },\n  // ✅ FORCE RESTORE BINARY DATA\n  binary: originalItem ? originalItem.binary : $input.item.binary\n};"
+      },
+      "id": "0854d25c-3256-49bd-aafb-150ba3f97e8f",
+      "name": "Set Folder Info from New",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5056,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const invoiceDate = $json.Invoice_Metadata?.Invoice_Date;\nlet folderSuffix;\n\nif (invoiceDate && invoiceDate.length >= 7) {\n  // Extract YYYY-MM from \"2026-01-21\"\n  folderSuffix = invoiceDate.substring(0, 7);\n} else {\n  // Fallback if date is missing (Error Invoices)\n  const now = new Date();\n  folderSuffix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;\n}\n\nreturn {\n  json: {\n    ...$json,\n    targetFolderName: `Invoices_${folderSuffix}`\n  },\n  // ✅ THIS LINE FIXES THE \"NO BINARY DATA\" ERROR\n  binary: $input.item.binary\n};"
+      },
+      "id": "e91de0e4-6dc1-4ae4-b903-9c495bf06e72",
+      "name": "Calculate Folder Name",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6400,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Recover the original invoice data from the \"Flatten\" node\nconst driveData = $input.item.json;\n\n// 2. Drive URL\nconst driveUrl = driveData.webViewLink;\n\n// 4. Merge everything together\nreturn {\n  json: {\n    ...driveData,\n    driveFileUrl: driveUrl,\n    driveFolderName: driveData.folderName\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3936,
+        -16
+      ],
+      "id": "cda3fbdf-d25f-46ad-ad25-0037942bcdb0",
+      "name": "Add Drive URL to Valid Invoice"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Recover the error data from the \"Flatten\" node\nconst driveData = $input.item.json;\n\n// 2. Drive URL\nconst driveUrl = driveData.webViewLink;\n\n// 4. Merge everything together\nreturn {\n  json: {\n    ...driveData,\n    driveFileUrl: driveUrl,\n    driveFolderName: driveData.folderName\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3936,
+        272
+      ],
+      "id": "a8e74814-99ad-4c09-998c-8820ca622eb0",
+      "name": "Add Drive URL to Error Invoice"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.Invoice_Metadata.Status }}",
+                    "rightValue": "OK",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "69dcec10-8cca-4223-a05c-7c4d3c3c6068"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Valid Invoices"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.Invoice_Metadata.Status }}",
+                    "rightValue": "OK",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    },
+                    "id": "0ce796c8-d373-4e6d-bcb2-3922eeec07ea"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Error Invoices"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "12af6e19-087c-4030-bf7a-a74b166ce41b",
+      "name": "Route by Validation Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -4832,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const data = $input.item.json;\nconst itemIndex = $input.item.index;\n\n// 1. Determine Filename (Try multiple locations)\n// Prioritize Invoice_Metadata as we explicitly saved it there in the Validation node\nconst fileName = data.Invoice_Metadata?.Invoice_File_Name || data.fileName || data.Invoice_File_Name;\n\n// 2. Fetch Source Items (to recover binary if lost)\nconst originalItems = $('Normalize Binary Field Name').all();\n\n// 3. Find Matching Source Item\n// Priority: Match by filename -> Match by index -> undefined\nlet originalItem = originalItems.find(item => item.json.fileName === fileName);\nif (!originalItem && originalItems[itemIndex]) {\n   originalItem = originalItems[itemIndex]; \n}\n\n// 4. Determine Binary Data\nlet binaryData = {};\n\n// Try current item binary first\nif ($input.item.binary && Object.keys($input.item.binary).length > 0) {\n    binaryData = $input.item.binary;\n} \n// Fallback to original source binary\nelse if (originalItem && originalItem.binary) {\n    binaryData = originalItem.binary;\n}\n\n// 5. CRITICAL FIX: Ensure 'data' property exists for Google Drive\n// The Google Drive node specifically looks for the field named 'data' (or configured field)\nif (Object.keys(binaryData).length > 0) {\n    // If 'data' is missing but we have other keys (like 'Invoice_File'), point 'data' to it\n    if (!binaryData.data) {\n        const firstKey = Object.keys(binaryData)[0];\n        binaryData.data = binaryData[firstKey];\n    }\n}\n\nreturn {\n  json: {\n    Vendor_Name: data.Invoice_Metadata?.Vendor_Name || '',\n    Vendor_GSTIN: data.Invoice_Metadata?.Vendor_GSTIN || '',\n    Invoice_Number: data.Invoice_Metadata?.Invoice_Number || '',\n    Invoice_Date: data.Invoice_Metadata?.Invoice_Date || '',\n    PO_Number: data.Invoice_Metadata?.PO_Number || '',\n    Currency: data.Invoice_Metadata?.Currency || '',\n    Subtotal: data.Financial_Summary?.Subtotal || '',\n    CGST: data.Financial_Summary?.CGST || '',\n    SGST: data.Financial_Summary?.SGST || '',\n    IGST: data.Financial_Summary?.IGST || '',\n    Total_GST: data.Financial_Summary?.Total_GST || '',\n    Total_Invoice_Amount: data.Financial_Summary?.Total_Invoice_Amount || '',\n    Vendor_Category: data.Classification?.Vendor_Category || '',\n    Invoice_Month: data.Classification?.Invoice_Month || '',\n    Financial_Year: data.Classification?.Financial_Year || '',\n    Status: data.Invoice_Metadata?.Status || '',\n    Invoice_File_Name: fileName || '',\n    \n    // Pass folder info\n    folderId: data.folderId,\n    folderName: data.folderName\n  },\n  // ✅ FORCE RESTORE\n  binary: binaryData\n};"
+      },
+      "id": "137e1467-1d5d-455a-b0c2-2efd5d71e77f",
+      "name": "Flatten Valid Invoice Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4608,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const data = $input.item.json;\nconst itemIndex = $input.item.index;\n\n// 1. Determine Filename (Try multiple locations)\n// Prioritize Invoice_Metadata as we explicitly saved it there in the Validation node\nconst fileName = data.Invoice_Metadata?.Invoice_File_Name || data.fileName || data.Invoice_File_Name;\n\n// 2. Fetch Source Items (to recover binary if lost)\nconst originalItems = $('Normalize Binary Field Name').all();\n\n// 3. Find Matching Source Item\n// Priority: Match by filename -> Match by index -> undefined\nlet originalItem = originalItems.find(item => item.json.fileName === fileName);\nif (!originalItem && originalItems[itemIndex]) {\n   originalItem = originalItems[itemIndex]; \n}\n\n// 4. Determine Binary Data\nlet binaryData = {};\n\n// Try current item binary first\nif ($input.item.binary && Object.keys($input.item.binary).length > 0) {\n    binaryData = $input.item.binary;\n} \n// Fallback to original source binary\nelse if (originalItem && originalItem.binary) {\n    binaryData = originalItem.binary;\n}\n\n// 5. CRITICAL FIX: Ensure 'data' property exists for Google Drive\n// The Google Drive node specifically looks for the field named 'data' (or configured field)\nif (Object.keys(binaryData).length > 0) {\n    // If 'data' is missing but we have other keys (like 'Invoice_File'), point 'data' to it\n    if (!binaryData.data) {\n        const firstKey = Object.keys(binaryData)[0];\n        binaryData.data = binaryData[firstKey];\n    }\n}\n\nreturn {\n  json: {\n    Vendor_Name: data.Invoice_Metadata?.Vendor_Name || 'NULL',\n    Vendor_GSTIN: data.Invoice_Metadata?.Vendor_GSTIN || 'NULL',\n    Invoice_Number: data.Invoice_Metadata?.Invoice_Number || 'NULL',\n    Invoice_Date: data.Invoice_Metadata?.Invoice_Date || 'NULL',\n    Total_Invoice_Amount: data.Financial_Summary?.Total_Invoice_Amount || 'NULL',\n    Status: data.Invoice_Metadata?.Status || 'NULL',\n    Issue_Description: data.Invoice_Metadata?.Issue_Description || 'NULL',\n    Invoice_File_Name: fileName || 'NULL',\n    \n    // Pass folder info\n    folderId: data.folderId,\n    folderName: data.folderName\n  },\n  // ✅ FORCE RESTORE\n  binary: binaryData\n};"
+      },
+      "id": "3072af6f-3ac3-447d-b00a-8574871c935a",
+      "name": "Flatten Error Invoice Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4608,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.Invoice_File_Name }}",
+        "driveId": {
+          "__rl": true,
+          "value": "0APuB_yOleAU8Uk9PVA",
+          "mode": "list",
+          "cachedResultName": "Invoice",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/0APuB_yOleAU8Uk9PVA"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $json.folderId }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "00437eee-cb43-4273-b7fc-ff2608d6fa4e",
+      "name": "Upload Valid Invoice to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -4384,
+        -80
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "KohLRqftAOrYNrST",
+          "name": "Google Drive account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.Invoice_File_Name }}",
+        "driveId": {
+          "__rl": true,
+          "value": "0APuB_yOleAU8Uk9PVA",
+          "mode": "list",
+          "cachedResultName": "Invoice",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/0APuB_yOleAU8Uk9PVA"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $json.folderId }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "d5422f17-90fb-4218-b27c-f584a1511ceb",
+      "name": "Upload Error Invoice to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -4384,
+        304
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "KohLRqftAOrYNrST",
+          "name": "Google Drive account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "id": "201db51d-0feb-4822-8eb8-955a6c67c562",
+      "name": "Merge Streams",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -7920,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "69f1f3be-548c-434d-b546-c351d4e71db3",
+      "name": "Merge Search Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -5952,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "1a4230d2-a362-4eca-b06f-cbb785da92c1",
+      "name": "Merge Created Folder",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -5280,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "43959c78-829f-4414-870d-f9595944cffa",
+      "name": "Merge Upload Valid",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -4160,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "8cc20e17-716e-4318-9dc3-6535b2663153",
+      "name": "Merge Upload Error",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -4160,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ocrItems = $input.all();\nconst imageInputItems = $('Route by File Type').all(1);\n\nreturn ocrItems.map((item, index) => {\n  const originalItem = imageInputItems[index];\n  return {\n    json: {\n      ...item.json,\n      fileName: originalItem.json.fileName\n    },\n    binary: item.binary // Preserve binary if it exists\n  };\n});"
+      },
+      "id": "cbc403a1-0fae-49da-b6ea-d1ef9c547827",
+      "name": "Restore Image Filename",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8144,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "407b1452-29ea-47f3-baa0-e291fd3adf5c",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -7696,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the output from the AI Agent (the current input item)\nconst aiData = $input.item.json;\n\n// Get the original item directly from the Loop node context\n// This works even without a wire connecting them!\nconst loopData = $('Loop Over Items').item;\n\n// Logic to handle if AI Agent failed (returned an error)\nif (aiData.error) {\n    return {\n        json: {\n            ...aiData,\n            fileName: loopData.json.fileName,\n            Invoice_Metadata: { \n                Status: 'Error', \n                Issue_Description: 'AI Extraction Failed',\n                Invoice_File_Name: loopData.json.fileName \n            }\n        },\n        binary: loopData.binary\n    };\n}\n\n// Logic for Successful Extraction\nreturn {\n  json: {\n    ...aiData,\n    fileName: loopData.json.fileName,\n    // Add fileName to Invoice_Metadata so the Validation node can find it later\n    Invoice_Metadata: {\n        ...(aiData.Invoice_Metadata || {}),\n        Invoice_File_Name: loopData.json.fileName\n    }\n  },\n  // Restore the binary file (PDF/Image) for uploading later\n  binary: loopData.binary\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7072,
+        -64
+      ],
+      "id": "b2a5bae3-76ef-483a-b2d2-1888d72a7110",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Invoice Upload Form": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Normalize Binary Field Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by File Type": {
+      "main": [
+        [
+          {
+            "node": "Extract Text from PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OCR for Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text from PDF": {
+      "main": [
+        [
+          {
+            "node": "Merge Streams",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OCR for Images": {
+      "main": [
+        [
+          {
+            "node": "Restore Image Filename",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invoice Extraction AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSTIN and Date Validation": {
+      "main": [
+        [
+          {
+            "node": "Calculate Folder Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Valid Invoices": {
+      "main": [
+        [
+          {
+            "node": "Format Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Error Invoices for Review": {
+      "main": [
+        [
+          {
+            "node": "Format Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invoice_JSON_Schema_Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Invoice Extraction AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator_for_Validation": {
+      "ai_tool": [
+        [
+          {
+            "node": "Invoice Extraction AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic_Chat_Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Invoice Extraction AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Model for Parser": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Invoice_JSON_Schema_Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Binary Field Name": {
+      "main": [
+        [
+          {
+            "node": "Route by File Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search for Folder": {
+      "main": [
+        [
+          {
+            "node": "Merge Search Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Folder Exists": {
+      "main": [
+        [
+          {
+            "node": "Set Folder Info from Existing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create New Folder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Created Folder",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Create New Folder": {
+      "main": [
+        [
+          {
+            "node": "Merge Created Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Folder Info from Existing": {
+      "main": [
+        [
+          {
+            "node": "Route by Validation Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Folder Info from New": {
+      "main": [
+        [
+          {
+            "node": "Route by Validation Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Validation Status": {
+      "main": [
+        [
+          {
+            "node": "Flatten Valid Invoice Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Flatten Error Invoice Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten Valid Invoice Data": {
+      "main": [
+        [
+          {
+            "node": "Upload Valid Invoice to Drive",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Upload Valid",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Flatten Error Invoice Data": {
+      "main": [
+        [
+          {
+            "node": "Upload Error Invoice to Drive",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Upload Error",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Upload Valid Invoice to Drive": {
+      "main": [
+        [
+          {
+            "node": "Merge Upload Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Error Invoice to Drive": {
+      "main": [
+        [
+          {
+            "node": "Merge Upload Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Drive URL to Valid Invoice": {
+      "main": [
+        [
+          {
+            "node": "Store Valid Invoices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Drive URL to Error Invoice": {
+      "main": [
+        [
+          {
+            "node": "Store Error Invoices for Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Folder Name": {
+      "main": [
+        [
+          {
+            "node": "Search for Folder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Search Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Streams": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Search Results": {
+      "main": [
+        [
+          {
+            "node": "Check if Folder Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Created Folder": {
+      "main": [
+        [
+          {
+            "node": "Set Folder Info from New",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Upload Valid": {
+      "main": [
+        [
+          {
+            "node": "Add Drive URL to Valid Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Upload Error": {
+      "main": [
+        [
+          {
+            "node": "Add Drive URL to Error Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Image Filename": {
+      "main": [
+        [
+          {
+            "node": "Merge Streams",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Invoice Extraction AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Success Response": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Error Response": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "GSTIN and Date Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "16645f2d-ecce-4820-af74-70c632a660f9",
+  "meta": {
+    "instanceId": "0b904189d4eac8aef45604ecbef82416d5f51fcc6bfd2a4b60154fbfee35a456"
+  },
+  "id": "PcUlAB8X0zCUvQ0zliCdg",
+  "tags": []
+}

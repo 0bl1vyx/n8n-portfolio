@@ -1,0 +1,1477 @@
+{
+  "name": "Saas Lead Finder (1st Automation)",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyApj3lvEWUKw12R9p4x4m5sh_OzNDOpwkE"
+            },
+            {
+              "name": "cx",
+              "value": "44fe17f8fa250429e"
+            },
+            {
+              "name": "q",
+              "value": "={{ $json.search_query }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.start_index }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -144,
+        16
+      ],
+      "id": "192264e8-8df0-4ec4-a215-5ea9cfef5706",
+      "name": "Google Search"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -432,
+        0
+      ],
+      "id": "b1173fea-6927-44d9-a5d6-3cd513aa0b98",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=URL = {{ $json.url }}\n\nTitle = {{ $json.title }}\n\nContent = {{ $json.content }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an expert Technical Sales Development Representative (SDR) and SaaS Analyst.\nI will provide the content of a potential client's website.\n\nYour Goal: Qualify this company as a valid **Amazon PPC Software/SaaS**, extract key details, and identify the decision-maker.\n\n### **1. CRITICAL: THE \"AGENCY VS. SAAS\" FILTER**\nYou must distinguish between **Software** (keep) and **Agencies** (discard).\n\n**⛔ MARK AS FALSE (Agency) IF:**\n- The site sells \"Services\", \"Management\", or \"Consulting\" as the primary offering.\n- The text says \"We manage your ads\", \"Done-for-you\", or \"Our experts run your campaigns\".\n- The \"Login\" button leads to a generic client portal (e.g., `sharepoint`, `portal.`, `monday.com`).\n- Pricing mentions \"Retainers\" or \"% of Ad Spend\" *without* mentioning a software license.\n\n**✅ MARK AS TRUE (SaaS) IF:**\n- The site promotes an \"Algorithm\", \"AI Tool\", \"Dashboard\", or \"Automation Platform\".\n- **Self-Serve:** Users can \"Start Free Trial\", \"Sign Up Now\", or \"Login\" to an app.\n- **Enterprise SaaS:** The CTA is **\"Book a Demo\"** or \"Request Access\", BUT the product is clearly described as a **Platform/Tool** that the user operates themselves (e.g., \"Enterprise Ad Tech\", \"Bid Automation Platform\").\n\n### **2. DATA EXTRACTION RULES**\n**A. Decision Maker (CEO/Founder)**\n- Prioritize: **CEO > Founder > Owner > Co-Founder**.\n- If no specific name is found in the text, return \"Unknown\".\n- *Do not* invent names.\n\n**B. Contact Info**\n- **Email:** Scrape any visible email. Priority: `name@domain` > `founders@domain` > `hello@/support@`.\n- **Phone:** Look for header/footer numbers. Keep country code (e.g., +1, +44).\n\n**C. Location & Size**\n- **Location:** If no address is found, infer from Currency (USD = likely US, GBP = UK) or Phone Code (+1 = US, +44 = UK).\n- **Employees:** Estimate based on \"Team\" section photos or \"About Us\" text. If uncertain, default to \"Unknown\".\n\n### **3. \"OUTDATED\" DETECTION**\n- Check the Footer Copyright. If it is **2023 or older**, mark `is_outdated: true`.\n- If the blog/news section hasn't been updated since 2023, mark `true`.\n\n### **4. REQUIRED JSON OUTPUT**\nReturn ONLY a single valid JSON object. No markdown. No reasoning.\n\n{\n  \"company_name\": \"String (Clean Business Name)\",\n  \"is_amazon_ppc_saas\": true, // TRUE for Self-Serve SaaS AND Enterprise SaaS. FALSE for Agencies.\n  \"location\": \"String (e.g., 'US', 'UK', 'Other')\",\n  \"employee_count_estimate\": \"String (e.g., '2-10', '11-50', '50+', 'Unknown')\",\n  \"copyright_year\": \"String (e.g., '2023', '2020', 'Unknown')\",\n  \"is_outdated\": boolean, \n  \"decision_maker_name\": \"String (e.g., 'John Doe' or 'Unknown')\",\n  \"decision_maker_title\": \"String (e.g., 'CEO', 'Founder' or 'Unknown')\",\n  \"contact_email\": \"String (e.g., 'john@domain.com', 'support@domain.com' or 'Unknown')\",\n  \"phone_number\": \"String (e.g., '+1 555-0199' or 'Unknown')\",\n  \"Site URL\": \"{{ $json.url }}\"\n}"
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        720,
+        32
+      ],
+      "id": "4f03cea9-cd05-4457-b561-809de98e9665",
+      "name": "Basic LLM Chain",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.0-flash-lite-001",
+        "options": {
+          "responseFormat": "json_object",
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        720,
+        224
+      ],
+      "id": "6a7c5594-6c7d-4426-acd7-6bd499f3833b",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "zM5yQy9aQUY1TvmX",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Find Amazon PPC Saas Companies & Get Their Links\n",
+        "height": 528,
+        "width": 1040,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -992,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "c69ba46d-e2cc-464b-891c-4907faf9cb90",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Wordpress Site Check And Version check",
+        "height": 272,
+        "width": 368,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        96,
+        256
+      ],
+      "typeVersion": 1,
+      "id": "911570ac-68bf-429b-a4db-43217889c4a4",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e59d2d48-0b05-496f-bd83-211fab1c38a0",
+              "name": "Link1",
+              "value": "={{ $json.items[0].displayLink }}",
+              "type": "string"
+            },
+            {
+              "id": "e58156ba-555a-451d-a66d-90d496b5eb55",
+              "name": "Link2",
+              "value": "={{ $json.items[1].displayLink }}",
+              "type": "string"
+            },
+            {
+              "id": "01032640-c1da-448e-bb06-ed7f70e10016",
+              "name": "Link3",
+              "value": "={{ $json.items[2].displayLink }}",
+              "type": "string"
+            },
+            {
+              "id": "2951bf12-6f29-4f66-bee0-dca59abd0b6a",
+              "name": "Link4",
+              "value": "={{ $json.items[3].displayLink }}",
+              "type": "string"
+            },
+            {
+              "id": "23a43f25-21e5-429d-b848-1b33c037b0da",
+              "name": "Link5",
+              "value": "={{ $json.items[4].displayLink }}",
+              "type": "string"
+            },
+            {
+              "id": "4ed5bf22-ee70-4994-aa1d-f9afc3e8a77e",
+              "name": "Link6",
+              "value": "={{ $json.items[5].displayLink }}",
+              "type": "string"
+            },
+            {
+              "id": "3825fb3f-92a5-42b7-9826-e95c4cc4734b",
+              "name": "Link7",
+              "value": "={{ $json.items[6].displayLink }}",
+              "type": "string"
+            },
+            {
+              "id": "86e2a554-9007-4eac-9c5c-7d48b06fa4ff",
+              "name": "Link8",
+              "value": "={{ $json.items[7].displayLink }}",
+              "type": "string"
+            },
+            {
+              "id": "b847058d-da0a-4c79-bc26-66b473e5998d",
+              "name": "Link9",
+              "value": "={{ $json.items[8].displayLink }}",
+              "type": "string"
+            },
+            {
+              "id": "545daa52-b6d9-421f-8dfb-dc716545312c",
+              "name": "Link10",
+              "value": "={{ $json.items[9].displayLink }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -672,
+        240
+      ],
+      "id": "7a08bc52-42e5-4fad-8c58-3994d978e086",
+      "name": "GET Links"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * ULTRA-SAFE WORDPRESS DETECTOR\n * - Concurrency: Runs 10 requests at a time (Safe for 100/min)\n * - Jitter: Random delays between batches\n * - Output: Returns ONLY valid WordPress sites\n */\n\n// CONFIGURATION\nconst BATCH_SIZE = 10; // Number of parallel requests\nconst MIN_DELAY = 1000; // 1 second min wait between batches\nconst MAX_DELAY = 3000; // 3 seconds max wait between batches\n\n// Modern User-Agents (Chrome, Edge, Firefox, Safari)\nconst userAgents = [\n  \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36\",\n  \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36\",\n  \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0\",\n  \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0\"\n];\n\n// Helper: Sleep function for safety delays\nconst sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));\n\n// Helper: Random Integer\nconst randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);\n\n// Helper: Valid version check\nfunction isValidVersion(ver) {\n  if (!ver) return false;\n  return /^\\d{1,2}\\.\\d{1,2}(?:\\.\\d{1,2})?$/.test(ver);\n}\n\n// Helper: Process a single URL\nasync function checkUrl(item, helpers) {\n  const url = item.json.full_url;\n  if (!url) return null; // Skip empty\n\n  const baseUrl = url.replace(/\\/$/, '');\n  let wpVersion = null;\n  let isWP = false;\n\n  try {\n    const response = await helpers.httpRequest({\n      method: 'GET',\n      url: baseUrl,\n      headers: {\n        'User-Agent': userAgents[Math.floor(Math.random() * userAgents.length)],\n        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',\n        'Accept-Language': 'en-US,en;q=0.9',\n        'Referer': 'https://www.google.com/',\n        'Sec-Ch-Ua': '\"Chromium\";v=\"122\", \"Not(A:Brand\";v=\"24\", \"Google Chrome\";v=\"122\"',\n        'Sec-Ch-Ua-Mobile': '?0',\n        'Sec-Ch-Ua-Platform': '\"Windows\"'\n      },\n      timeout: 8000,\n      ignoreResponseCode: true,\n      returnFullResponse: true\n    });\n\n    const body = response.body ? response.body.toString() : '';\n    const headers = response.headers;\n\n    // 1. Check Headers\n    if ((headers['x-powered-by'] && headers['x-powered-by'].includes('WordPress')) ||\n        (headers['link'] && headers['link'].includes('api.w.org'))) {\n      isWP = true;\n    }\n\n    // 2. Check Meta Generator (Strict)\n    const genMatch = body.match(/name=[\"']generator[\"']\\s+content=[\"']WordPress\\s?([\\d\\.]+)[\"']/i);\n    if (genMatch && isValidVersion(genMatch[1])) {\n      isWP = true;\n      wpVersion = genMatch[1];\n    }\n\n    // 3. Check Script Hashes (Fallback)\n    if (!wpVersion) {\n      const verMatch = body.match(/wp-includes\\/.*?\\?ver=([\\d\\.]+)/);\n      if (verMatch && isValidVersion(verMatch[1]) && parseFloat(verMatch[1]) > 4.0) {\n        isWP = true;\n        wpVersion = verMatch[1];\n      }\n    }\n\n    // 4. Check HTML Structure\n    if (!isWP && (body.includes('/wp-content/') || body.includes('/wp-includes/'))) {\n      isWP = true;\n    }\n\n    // FINAL DECISION: Only return if it IS WordPress\n    if (isWP) {\n      return {\n        json: {\n          ...item.json, // Keep original data\n          is_wordpress: true,\n          wordpress_version: wpVersion || \"Hidden\",\n          html_content: body // Save body for next node\n        }\n      };\n    }\n\n  } catch (e) {\n    // Determine if we should return \"Error\" or just ignore\n    // Safest option: Ignore errors to keep list clean\n    return null;\n  }\n  \n  return null; // Not WP\n}\n\n// MAIN EXECUTION LOOP (With Batching)\nconst allItems = $input.all();\nconst finalResults = [];\n\n// Loop through items in chunks\nfor (let i = 0; i < allItems.length; i += BATCH_SIZE) {\n  const batch = allItems.slice(i, i + BATCH_SIZE);\n  \n  // Run this batch in parallel\n  const batchPromises = batch.map(item => checkUrl(item, this.helpers));\n  const batchResults = await Promise.all(batchPromises);\n\n  // Filter out nulls (non-WP sites) and add to final list\n  batchResults.forEach(res => {\n    if (res) finalResults.push(res);\n  });\n\n  // Safety Pause (Jitter)\n  if (i + BATCH_SIZE < allItems.length) {\n    await sleep(randomInt(MIN_DELAY, MAX_DELAY));\n  }\n}\n\nreturn finalResults;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        336
+      ],
+      "id": "fbfad955-faa7-4beb-b1f3-92ed2b617778",
+      "name": "Wordpress Fingerprint"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Define the Expanded Blocklist\n// Note: Enter domains without 'www' or 'https'\nconst blocklist = [\n  // Social Media\n  \"facebook.com\", \"twitter.com\", \"x.com\", \"instagram.com\", \"youtube.com\", \"pinterest.com\", \"linkedin.com\", \"reddit.com\", \"tiktok.com\",\n  \n  // Software Reviews & Directories\n  \"trustpilot.com\", \"softwareadvice.com\", \"getapp.com\", \"trustradius.com\", \"crosdesk.com\", \"appsumo.com\", \"producthunt.com\", \"clutch.co\", \"goodfirms.co\", \"g2.com\", \"capterra.com\",\n  \n  // Business Profiles & Databases\n  \"crunchbase.com\", \"zoominfo.com\", \"pitchbook.com\", \"apollo.io\", \"bbb.org\",\n  \n  // Content, Q&A & News\n  \"medium.com\", \"quora.com\", \"wikipedia.org\", \"forbes.com\", \"businessinsider.com\", \"techcrunch.com\",\n  \n  // App Stores & Extensions\n  \"apps.apple.com\", \"play.google.com\", \"chrome.google.com\", \"microsoft.com\",\n  \n  // Freelance & Job Boards\n  \"upwork.com\", \"fiverr.com\", \"indeed.com\", \"angel.co\", \"wellfound.com\"\n];\n\n// 2. Prepare storage\nconst uniqueRootDomains = new Set();\nconst results = [];\n\n// 3. Access input data\nconst inputData = items[0].json.data || [];\n\n// Helper function to extract Clean Host and Root Domain\nfunction parseUrl(rawUrl) {\n  if (!rawUrl) return null;\n\n  // Clean the URL\n  let url = rawUrl.trim().toLowerCase();\n  \n  // Remove Protocol (http, https, ftp)\n  let host = url.replace(/^(?:https?:\\/\\/)?(?:www\\.)?/, '');\n  \n  // Remove Path (everything after the first slash)\n  host = host.split('/')[0];\n\n  // Remove Port if present (e.g. :8080)\n  host = host.split(':')[0];\n\n  if (!host) return null;\n\n  // LOGIC TO FIND ROOT DOMAIN (e.g., \"play.google.com\" -> \"google.com\")\n  const parts = host.split('.');\n  \n  // Handle cases like .co.uk, .com.au\n  let rootDomain = host;\n  \n  if (parts.length >= 3) {\n      const secondLast = parts[parts.length - 2];\n      const last = parts[parts.length - 1];\n      \n      // If domain is like .co.uk or .com.br\n      if (['co', 'com', 'net', 'org', 'gov', 'edu'].includes(secondLast) && last.length === 2) {\n          rootDomain = parts.slice(-3).join('.');\n      } else {\n          // Standard case: just take last 2 parts\n          rootDomain = parts.slice(-2).join('.');\n      }\n  } else if (parts.length === 2) {\n      rootDomain = parts.join('.');\n  }\n\n  return {\n    cleanHost: host,       // e.g. \"sellergeni.com\"\n    rootDomain: rootDomain // e.g. \"sellergeni.com\"\n  };\n}\n\n// 4. Iterate and Filter\nfor (const group of inputData) {\n  const urls = Object.values(group);\n\n  for (const rawUrl of urls) {\n    const parsed = parseUrl(rawUrl);\n\n    if (parsed) {\n      \n      // --- STRICT BLOCKLIST CHECK ---\n      const isBlocked = blocklist.some(blockedSite => {\n        // 1. Exact match (e.g. \"google.com\" == \"google.com\")\n        if (parsed.rootDomain === blockedSite) return true;\n        \n        // 2. Subdomain match (e.g. \"play.google.com\" ends with \".google.com\")\n        // We use \".\" + blockedSite to ensure we don't accidentally match \"mygoogle.com\"\n        if (parsed.cleanHost.endsWith('.' + blockedSite)) return true;\n\n        return false;\n      });\n\n      // --- DUPLICATE CHECK ---\n      const isDuplicate = uniqueRootDomains.has(parsed.rootDomain);\n\n      if (!isBlocked && !isDuplicate) {\n        uniqueRootDomains.add(parsed.rootDomain);\n\n        results.push({\n          json: {\n            full_url: `https://${parsed.cleanHost}`,\n            root_domain: parsed.rootDomain\n          }\n        });\n      }\n    }\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        240
+      ],
+      "id": "9a13e815-9133-4966-ba16-9538adc7ffdf",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        240
+      ],
+      "id": "2742943d-8ed2-448b-99eb-9314e8a00e33",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "content": "## LLM To Check If Its Amazon PPC Or Not",
+        "height": 448,
+        "width": 704,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        640,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "55711daa-81cb-4135-9920-f03eb4ecd6d3",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1skULZrOxAuJhIFSHM5bGN3L2xiLYdjTLGP6mc4Az8u4",
+          "mode": "list",
+          "cachedResultName": "Amzon PPC Saas Providers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1skULZrOxAuJhIFSHM5bGN3L2xiLYdjTLGP6mc4Az8u4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "All",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1skULZrOxAuJhIFSHM5bGN3L2xiLYdjTLGP6mc4Az8u4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.decision_maker_name }}",
+            "Site": "={{ $json[\"Site URL\"] }}",
+            "Employee Count": "={{ $json.employee_count_estimate }}",
+            "Location": "={{ $json.location }}",
+            "Copyright Year": "={{ $json.copyright_year }}",
+            "Title": "={{ $json.decision_maker_title }}",
+            "Email": "={{ $json.contact_email }}",
+            "Company Name": "={{ $json.company_name }}",
+            "Mobile No": "={{ $json.phone_number }}",
+            "Linkedin Profile": "={{ $json.linkedin_profile }}",
+            "WP Version": "={{ $json.wordpress_version }}",
+            "Email Draft": "={{ $json.email_draft }}",
+            "Linkedin Message Draft": "={{ $json.linkedin_draft }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Site",
+              "displayName": "Site",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Mobile No",
+              "displayName": "Mobile No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Linkedin Profile",
+              "displayName": "Linkedin Profile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Employee Count",
+              "displayName": "Employee Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "WP Version",
+              "displayName": "WP Version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Copyright Year",
+              "displayName": "Copyright Year",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Draft",
+              "displayName": "Email Draft",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Linkedin Message Draft",
+              "displayName": "Linkedin Message Draft",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        896
+      ],
+      "id": "beb0621a-eca0-4ac3-9c55-e40bd6649732",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MYc6onsb7Axtmftj",
+          "name": "Kabir (GC) NH"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -160,
+        640
+      ],
+      "id": "19381ba3-1725-4ce8-a274-63f86944f65f",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1skULZrOxAuJhIFSHM5bGN3L2xiLYdjTLGP6mc4Az8u4",
+          "mode": "list",
+          "cachedResultName": "Amzon PPC Saas Providers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1skULZrOxAuJhIFSHM5bGN3L2xiLYdjTLGP6mc4Az8u4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1265820402,
+          "mode": "list",
+          "cachedResultName": "Tried",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1skULZrOxAuJhIFSHM5bGN3L2xiLYdjTLGP6mc4Az8u4/edit#gid=1265820402"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -912,
+        592
+      ],
+      "id": "bf017f30-dbff-45c6-858d-4677b1c320da",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MYc6onsb7Axtmftj",
+          "name": "Kabir (GC) NH"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -704,
+        576
+      ],
+      "id": "ef024e84-abe5-4bd1-8da9-fb765213d9bc",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1skULZrOxAuJhIFSHM5bGN3L2xiLYdjTLGP6mc4Az8u4",
+          "mode": "list",
+          "cachedResultName": "Amzon PPC Saas Providers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1skULZrOxAuJhIFSHM5bGN3L2xiLYdjTLGP6mc4Az8u4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1265820402,
+          "mode": "list",
+          "cachedResultName": "Tried",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1skULZrOxAuJhIFSHM5bGN3L2xiLYdjTLGP6mc4Az8u4/edit#gid=1265820402"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Link": "={{ $json.full_url }}"
+          },
+          "matchingColumns": [
+            "Link"
+          ],
+          "schema": [
+            {
+              "id": "Link",
+              "displayName": "Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -704,
+        832
+      ],
+      "id": "f91ec476-3913-4d86-9489-6de3a27ff002",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MYc6onsb7Axtmftj",
+          "name": "Kabir (GC) NH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Helper function to clean URLs for accurate matching\n// Converts \"https://www.example.com/\" -> \"example.com\"\nfunction normalizeUrl(url) {\n  if (!url) return '';\n  return url.toLowerCase()\n    .replace(/^https?:\\/\\//, '') // Remove protocol\n    .replace(/^www\\./, '')       // Remove www\n    .replace(/\\/$/, '');         // Remove trailing slash\n}\n\n// 1. Separate the mixed input into \"New Leads\" (Search Results) and \"Existing Data\" (Sheet)\nlet newLeads = [];      // From Google Search\nlet existingSheetUrls = new Set(); // From Google Sheet\n\nfor (const item of items) {\n  const data = item.json;\n\n  // Identify Sheet data: It has 'row_number' and 'Link'\n  if (data.hasOwnProperty('row_number')) {\n    if (data.Link) {\n      existingSheetUrls.add(normalizeUrl(data.Link));\n    }\n  } \n  // Identify Search data: It has 'full_url' and 'root_domain'\n  else if (data.hasOwnProperty('full_url')) {\n    newLeads.push(data);\n  }\n}\n\n// 2. Filter new leads\n// Keep only leads where the URL is NOT in the existing set\nconst uniqueLeads = newLeads.filter(lead => {\n  const normalizedLeadUrl = normalizeUrl(lead.full_url);\n  return !existingSheetUrls.has(normalizedLeadUrl);\n});\n\n// 3. Return results in n8n format\nreturn uniqueLeads.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        576
+      ],
+      "id": "43cde879-4526-4b3f-8212-4e0ce8001abd",
+      "name": "Duplicate Remover"
+    },
+    {
+      "parameters": {
+        "content": "## Remove Duplicates",
+        "height": 528,
+        "width": 688
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -992,
+        480
+      ],
+      "typeVersion": 1,
+      "id": "29f66d2f-60dc-4431-9303-d2e3d56a6f7b",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * MERGE STRATEGY: Lookup & Enrich\n * 1. Creates a dictionary (lookup map) of the WordPress data.\n * 2. Iterates through LLM items and looks up the WP version.\n * 3. Handles URL mismatches (e.g., www vs non-www) via normalization.\n */\n\n// Helper function to clean URLs for accurate matching\n// Turns \"https://www.AdBadger.com/\" into \"adbadger.com\"\nfunction normalizeUrl(url) {\n  if (!url) return '';\n  try {\n    return url.toLowerCase()\n      .trim()\n      .replace(/^https?:\\/\\//, '') // Remove protocol (http/https)\n      .replace(/^www\\./, '')       // Remove www.\n      .replace(/\\/$/, '');         // Remove trailing slash\n  } catch (e) {\n    return url;\n  }\n}\n\nconst items = $input.all();\nconst llmItems = [];\nconst wpLookup = {};\n\n// ------------------------------------------\n// 1. Sort items into LLM list vs WP Lookup Map\n// ------------------------------------------\nfor (const item of items) {\n  const json = item.json;\n\n  // Check if this is a WordPress Fingerprint item\n  // We check for 'wordpress_version' or specific WP fields\n  if (json.hasOwnProperty('wordpress_version') && json.hasOwnProperty('full_url')) {\n    const key = normalizeUrl(json.full_url);\n    wpLookup[key] = json.wordpress_version;\n  } \n  \n  // Check if this is an LLM response item\n  // We check for fields unique to your LLM output\n  else if (json.hasOwnProperty('company_name') && json.hasOwnProperty('Site URL')) {\n    llmItems.push(item);\n  }\n}\n\n// ------------------------------------------\n// 2. Enrich LLM items with WP Data\n// ------------------------------------------\nconst results = llmItems.map(item => {\n  const siteUrl = item.json['Site URL'];\n  const lookupKey = normalizeUrl(siteUrl);\n\n  // Find the version. If not found in WP data, set to \"Not Checked\" or null\n  const wpVersion = wpLookup[lookupKey] || 'Unknown/Not Found';\n\n  return {\n    json: {\n      ...item.json, // Keep all LLM fields\n      wordpress_version: wpVersion // Add the new field\n    }\n  };\n});\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        96,
+        640
+      ],
+      "id": "cb24887e-ac0a-4a28-88c6-08155a0b096f",
+      "name": "Append Version"
+    },
+    {
+      "parameters": {
+        "content": "## Getting Raw Dump Of Site & Converting To Markdown",
+        "height": 272,
+        "width": 512,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        80,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "566e88ba-75e7-4324-b1b9-67a5571a713c",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "214badb8-c89f-4b13-9437-19534239e40e",
+              "leftValue": "={{ $json.is_amazon_ppc_saas }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1104,
+        16
+      ],
+      "id": "c13b4ee2-2a91-42c3-8f03-06a3c3ab88da",
+      "name": "PPC Check"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "56590afb-4fa8-4fcf-b4fd-9f7946d3d342",
+              "leftValue": "={{ $json.location }}",
+              "rightValue": "US",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "5570b9fc-f151-4fe8-8df7-131fda9f8084",
+              "leftValue": "={{ $json.location }}",
+              "rightValue": "UK",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "1c6a8a4c-d773-43e6-9ade-44e8e7800617",
+              "leftValue": "={{ $json.location }}",
+              "rightValue": "USA",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "227c7fb1-4d19-497b-8cef-66f9059cc259",
+              "leftValue": "={{ $json.location }}",
+              "rightValue": "Unknown",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1104,
+        240
+      ],
+      "id": "7cc3edc4-90b5-4aa0-9019-ec3fabe955c9",
+      "name": "US & UK"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyApj3lvEWUKw12R9p4x4m5sh_OzNDOpwkE"
+            },
+            {
+              "name": "cx",
+              "value": "44fe17f8fa250429e"
+            },
+            {
+              "name": "q",
+              "value": "=site:linkedin.com/in (\"CEO\" OR \"Founder\" OR \"Owner\") \"{{ $json.company_name }}\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        896,
+        480
+      ],
+      "id": "dd7fd5a9-692f-4abb-92c2-540996c1703c",
+      "name": "Linkedin Search For Name"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1104,
+        496
+      ],
+      "id": "bc9f695b-5f5b-46b4-9616-242d9ed049de",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from the Merge node\nconst items = $input.all();\n\n// 1. Separate the inputs into two lists based on their structure\n// Google items have the 'kind' property set to 'customsearch#search'\nconst googleList = items.filter(item => item.json.kind === 'customsearch#search');\n\n// LLM items are the ones that have the 'company_name' field\nconst llmList = items.filter(item => item.json.company_name !== undefined);\n\n// 2. Merge them together\n// We map over the LLM list (as the base) and grab the corresponding Google result by index\nconst results = llmList.map((llmItem, index) => {\n  \n  // Get the matching Google search item\n  const googleItem = googleList[index];\n  const topResults = [];\n\n  // Check if Google returned valid items\n  if (googleItem && googleItem.json.items && googleItem.json.items.length > 0) {\n    \n    // CHANGE: Slice the array to get the top 3 results (was 2)\n    const rawTop3 = googleItem.json.items.slice(0, 3);\n\n    // Clean them up to keep ONLY Title, Link, and Snippet\n    rawTop3.forEach(result => {\n      topResults.push({\n        title: result.title,\n        link: result.link,\n        snippet: result.snippet\n      });\n    });\n  }\n\n  // 3. Return the Combined Object\n  return {\n    json: {\n      ...llmItem.json,       // Keeps all existing fields (company_name, etc.)\n      search_results: topResults // Adds the new clean list of 3 search results\n    }\n  };\n});\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        496
+      ],
+      "id": "89c441b2-eff5-4723-bb7f-b19721e6ab36",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Company Name = {{ $json.company_name }}\nSite URL = {{ $json['Site URL'] }}\n\nSearch Results :-\n\nSearch 1\nTitle = {{ $json.search_results[0].title }}\nLink = {{ $json.search_results[0].link }}\nSnippet = {{ $json.search_results[0].snippet }}\n\nSearch 2\nTitle = {{ $json.search_results[1].title }}\nLink = {{ $json.search_results[1].link }}\nSnippet = {{ $json.search_results[1].snippet }}\n\nSearch 2\nTitle = {{ $json.search_results[2].title }}\nLink = {{ $json.search_results[2].link }}\nSnippet = {{ $json.search_results[2].snippet }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a Data Extraction Specialist.\nI will provide Google Search results (snippets) for a specific company.\nYour goal is to identify the **Current Decision Maker** (CEO, Founder, or Owner) and their contact info.\n\n### 1. STRICT ROLE HIERARCHY\nPrioritize finding the highest authority in this order:\n1. **CEO** (Chief Executive Officer)\n2. **Founder** / **Co-Founder**\n3. **Owner** / **Principal**\n4. **President** / **Managing Director**\n*If the only names found are lower-level (e.g., \"Sales Manager\", \"Engineer\"), return null.*\n\n### 2. VERIFICATION RULES (CRITICAL)\n- **Current Role Only:** You must verify the person is **CURRENTLY** at the target `company_name`.\n  - **REJECT** if the snippet says: \"Former CEO\", \"Ex-Founder\", \"Past:\", or lists the company under \"Previous Experience\".\n- **Company Matching:** Watch for similar names. If the target is \"Acme Soft\" but the snippet is for \"Acme Construction\", **IGNORE** it.\n- **Name Cleaning:** Extract ONLY the person's name. Remove titles, emojis, or separators.\n  - *Bad:* \"John Doe | CEO 🚀\"\n  - *Good:* \"John Doe\"\n\n### 3. CONTACT EXTRACTION\n- **LinkedIn:** If the search result `link` is a LinkedIn profile (linkedin.com/in/...), use it as the `linkedin_profile`.\n- **Email:** Extract any valid email address visible in the snippet. Prioritize personal (name@) over generic.\n\n### INPUT DATA\nUser will provide a JSON object with:\n- `site_url`: The target site.\n- `company_name`: The target company.\n- `search_results`: A list of search titles, links, and snippets.\n\n### REQUIRED JSON OUTPUT\nReturn ONLY a single valid JSON object.\n\n{\n  \"site_url\": \"{{ $json['Site URL'] }}\",\n  \"decision_maker_name\": \"String (Full Name) or null\",\n  \"decision_maker_title\": \"String (Role) or null\",\n  \"contact_email\": \"String (Email) or null\",\n  \"linkedin_profile\": \"String (Linkedin Profile URL) or null\"\n}"
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 1,
+          "delayBetweenBatches": 5000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        1488,
+        496
+      ],
+      "id": "d9692c1c-680f-44e3-95ed-38f9f0014da0",
+      "name": "Basic LLM Chain1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "mistralai/mistral-nemo",
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        736
+      ],
+      "id": "bbc17d70-d496-4652-b1da-ea563296bd6a",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "zM5yQy9aQUY1TvmX",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        896,
+        704
+      ],
+      "id": "1e417d1c-0cc3-4665-9bf9-3b9410249d18",
+      "name": "Merge4"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * ROBUST MERGE & ENRICHMENT\n * Goal: Combine Base LLM data with LinkedIn Search data\n * and ensure NO duplicates pass through.\n */\n\nfunction normalizeUrl(url) {\n  if (!url) return '';\n  try {\n    return url.toLowerCase().trim()\n      .replace(/^https?:\\/\\//, '')  // Fixed: Correctly escaped forward slashes\n      .replace(/^www\\./, '')        // Fixed: Correctly escaped dot\n      .replace(/\\/$/, '');          // Fixed: Correctly escaped trailing slash\n  } catch (e) { return url; }\n}\n\nconst items = $input.all();\n\n// 1. Map Enrichment Data (from LinkedIn Search Branch)\n// These items have 'site_url' (lowercase)\nconst enrichmentMap = {};\nitems.forEach(item => {\n  if (item.json.hasOwnProperty('site_url')) {\n    const key = normalizeUrl(item.json.site_url);\n    enrichmentMap[key] = item.json;\n  }\n});\n\n// 2. Process Base Data (from First LLM Branch)\n// These items have 'company_name' and 'Site URL'\nconst baseItems = items.filter(item => item.json.hasOwnProperty('company_name'));\nconst uniqueResults = new Map();\n\nbaseItems.forEach(baseItem => {\n  const baseJson = baseItem.json;\n  // Ensure we handle cases where 'Site URL' might be missing\n  if (!baseJson['Site URL']) return; \n  \n  const lookupKey = normalizeUrl(baseJson['Site URL']);\n   \n  // If we already processed this domain in this batch, skip (Deduplication)\n  if (uniqueResults.has(lookupKey)) return;\n\n  const enrichmentData = enrichmentMap[lookupKey];\n  const outputJson = { ...baseJson };\n\n  // Default LinkedIn to Unknown if missing\n  if (!outputJson.linkedin_profile) outputJson.linkedin_profile = 'Unknown';\n\n  if (enrichmentData) {\n    // A. Overwrite Name/Title if LinkedIn search found something better\n    if (enrichmentData.decision_maker_name && enrichmentData.decision_maker_name !== 'null') {\n      outputJson.decision_maker_name = enrichmentData.decision_maker_name;\n    }\n    if (enrichmentData.decision_maker_title && enrichmentData.decision_maker_title !== 'null') {\n      outputJson.decision_maker_title = enrichmentData.decision_maker_title;\n    }\n\n    // B. LinkedIn Profile\n    if (enrichmentData.linkedin_profile && enrichmentData.linkedin_profile !== 'null') {\n      outputJson.linkedin_profile = enrichmentData.linkedin_profile;\n    }\n\n    // C. Email Logic (Combine found emails)\n    const newEmail = enrichmentData.contact_email;\n    if (newEmail && newEmail !== 'Unknown' && newEmail !== 'null') {\n        if (outputJson.contact_email && outputJson.contact_email !== 'Unknown') {\n            if (!outputJson.contact_email.includes(newEmail)) {\n                outputJson.contact_email = `${outputJson.contact_email}, ${newEmail}`;\n            }\n        } else {\n            outputJson.contact_email = newEmail;\n        }\n    }\n  }\n\n  uniqueResults.set(lookupKey, { json: outputJson });\n});\n\nreturn Array.from(uniqueResults.values());"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        704
+      ],
+      "id": "6b48b026-0aa9-41b4-981c-3dfba2581cfb",
+      "name": "Filter2"
+    },
+    {
+      "parameters": {
+        "content": "## Get Founder/CEO Name + Linkdin Profile",
+        "height": 496,
+        "width": 1024,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        800,
+        416
+      ],
+      "typeVersion": 1,
+      "id": "63fa70f1-9941-4a0e-a6a0-597e7ce3c078",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from the previous node\nconst items = $input.all();\n\n// Loop through all items\nfor (const item of items) {\n\n  // --- 1. Phone Number Cleaning ---\n  const phone = item.json.phone_number;\n\n  // Check if phone exists and is not \"Unknown\"\n  if (phone && phone !== \"Unknown\") {\n    \n    // REGEX EXPLANATION:\n    // [^0-9+] means \"match any character that is NOT a digit (0-9) or a plus sign (+)\"\n    // We replace those characters with an empty string.\n    // Example: \"+609 297.5402\" becomes \"+6092975402\"\n    let cleanPhone = phone.replace(/[^0-9+]/g, \"\");\n\n    // Update the JSON data\n    item.json.phone_number = cleanPhone;\n  }\n\n  // --- 2. LinkedIn Profile Handling ---\n  // Ensure the field exists in the output. \n  // If it's missing, null, or empty, set it to \"Unknown\".\n  if (!item.json.linkedin_profile || item.json.linkedin_profile === \"null\") {\n    item.json.linkedin_profile = \"Unknown\";\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        640
+      ],
+      "id": "ab4202c9-60d0-4f06-a723-0a2b80ea5081",
+      "name": "Fix Mobile No"
+    },
+    {
+      "parameters": {
+        "content": "## Final Filter, Draft Message & Save",
+        "height": 544,
+        "width": 1024
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -256,
+        560
+      ],
+      "typeVersion": 1,
+      "id": "c4dceeab-7855-4eb6-baea-0d13880ca6ba",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Map the incoming items to Apify's \"startUrls\" format\nconst formattedUrls = items.map(item => {\n  return {\n    \"url\": item.json.full_url\n  };\n});\n\n// Return a single item containing the array\n// This ensures the Apify node runs only ONCE for all URLs\nreturn {\n  json: {\n    startUrls: formattedUrls\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        32
+      ],
+      "id": "b13f7456-6141-47d7-8924-e3442e4639f5",
+      "name": "Format"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "YJCnS9qogi9XxDgLB",
+          "mode": "list",
+          "cachedResultName": "Puppeteer Scraper (apify/puppeteer-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/YJCnS9qogi9XxDgLB/input"
+        },
+        "customBody": "={\n  \"maxConcurrency\": 10,\n  \"startUrls\": {{ JSON.stringify($json.startUrls) }},\n  \"linkSelector\": \"\",\n  \"pageFunction\": \"async function pageFunction(context) {\\n    const { page, request } = context;\\n    const title = await page.title();\\n    \\n    // 1. Remove 'junk' tags (scripts, styles) so their code doesn't get mixed in\\n    await page.evaluate(() => {\\n        const junk = document.querySelectorAll('script, style, noscript, iframe, svg');\\n        junk.forEach(el => el.remove());\\n    });\\n\\n    // 2. Use 'textContent' instead of 'innerText' to get HIDDEN text (like FAQs)\\n    const rawText = await page.evaluate(() => document.body.textContent);\\n\\n    // 3. Clean up extra whitespace\\n    const cleanText = rawText.replace(/\\\\s+/g, ' ').trim();\\n\\n    return {\\n        url: request.url,\\n        title,\\n        content: cleanText\\n    };\\n}\",\n  \"proxyConfiguration\": {\n    \"useApifyProxy\": true\n  },\n  \"useChrome\": true,\n  \"useStealth\": true,\n  \"preNavigationHooks\": \"[\\n    async ({ page }) => {\\n        await page.setRequestInterception(true);\\n        page.on('request', (req) => {\\n            // Added 'font' and 'other' to further speed it up\\n            if (['image', 'stylesheet', 'font', 'media', 'other'].includes(req.resourceType())) {\\n                req.abort();\\n            } else {\\n                req.continue();\\n            }\\n        });\\n    }\\n]\"\n}",
+        "timeout": 1800,
+        "memory": 2048
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        384,
+        32
+      ],
+      "id": "8732e7dd-b570-4991-9acc-b5c673b09cda",
+      "name": "Run an Actor and get dataset",
+      "credentials": {
+        "apifyApi": {
+          "id": "Fx2L4bughV0kC0Sn",
+          "name": "Apify account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtHour": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -928,
+        240
+      ],
+      "id": "927a6a7b-008d-40e4-b610-69aa6511d4ab",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * 🚀 ULTIMATE DORK GENERATOR v2.0 (Google-Safe & Self-Feeding)\n * * FEATURES:\n * 1. \"Smart Budgeting\" for Query Length (Keeps under Google's 32-word limit).\n * 2. Hybrid Strategy: \n * - STATIC: Deep market exploration with strict filters.\n * - DYNAMIC: Finds lookalike audiences of the leads you already found.\n * 3. Fallback Safety: Never runs empty.\n */\n\n// --- CONFIGURATION ---\nconst STATIC_PAGES = 10;      // 5 pages x 10 results = 50 results (Static)\nconst COMPETITOR_PAGES = 3;  // 3 pages x 10 results = 30 results per competitor\nconst MAX_COMPETITORS = 5;   // Only process the last 3 competitors to save credits\n\n// --- BLOCKLISTS (Organized by Priority) ---\n\n// 1. TIER A: ABSOLUTE TRASH (Always Block)\n// These consume ~11 words. We must always include these.\nconst tierA_Social = [\n  \"facebook.com\", \"twitter.com\", \"instagram.com\", \"youtube.com\", \n  \"linkedin.com\", \"reddit.com\", \"tiktok.com\", \"pinterest.com\"\n];\n\n// 2. TIER B: DIRECTORIES & MARKETPLACES (Rotate These)\n// These are good sources but not \"Direct Leads\". We block them to find actual company sites.\nconst tierB_Directories = [\n  \"capterra.com\", \"g2.com\", \"softwareadvice.com\", \"getapp.com\",\n  \"trustpilot.com\", \"upwork.com\", \"fiverr.com\", \"glassdoor.com\",\n  \"clutch.co\", \"crunchbase.com\"\n];\n\n// --- STATIC ANGLES (The \"Explorer\" Engine) ---\n// 20 Unique Angles to rotate through over 5 months\nconst staticAngles = [\n  // High Intent (Pricing/Login)\n  '\"Amazon PPC\" \"Software\" \"Pricing\" -\"Agency\"',\n  '\"Amazon Bid Optimization\" \"Platform\" \"Login\"',\n  '\"Amazon Advertising\" \"Automation\" \"Start Free Trial\"',\n  '\"Amazon ACOS\" \"Dashboard\" \"Sign up\"',\n  \n  // Feature Specific\n  '\"Amazon Dayparting\" \"Tool\" \"Features\"',\n  '\"Amazon Keyword Harvesting\" \"Automation\" -\"Service\"',\n  '\"Amazon Inventory Forecasting\" \"Software\" \"PPC\"',\n  '\"Amazon DSP\" \"Self-serve\" \"Platform\"',\n  '\"Amazon Merchandising\" \"Tool\" \"Analytics\"',\n  \n  // Tech & Integration\n  '\"Powered by Amazon SP-API\" \"Advertising\"',\n  '\"Integration with Amazon Advertising\" \"Login\"',\n  '\"Amazon Marketing Stream\" \"Tool\" \"Beta\"',\n  \n  // Competitor Alternatives (The \"Vs\" Strategy)\n  '\"Alternatives to Teikametrics\" \"PPC\"',\n  '\"Better than Helium 10\" \"Advertising\"',\n  '\"Pacvue competitors\" \"Software\"',\n  '\"AdBadger vs\" \"Amazon PPC\"',\n  \n  // Niche/Persona\n  '\"Amazon PPC Software\" \"for Agencies\" \"White Label\"',\n  '\"Amazon Advertising Tool\" \"for Aggregators\"',\n  '\"Walmart Connect\" \"Ad Software\" \"Amazon\"', // Cross-market\n  '\"Instacart Ads\" \"Management\" \"Software\"'\n];\n\n// --- MASTER COMPETITOR LIST (Fallback) ---\n// Used if your Google Sheet is empty or new.\nconst masterCompetitors = [\n  \"teikametrics.com\",\n  \"helium10.com\",\n  \"junglescout.com\",\n  \"pacvue.com\",\n  \"perpetua.io\"\n];\n\n// ============================================================\n// ⚙️ PROCESSING LOGIC\n// ============================================================\n\n// 1. Extract Domains from Google Sheet Input\nconst sheetRows = $input.all();\nconst extractedDomains = [];\n\nfor (const row of sheetRows) {\n  const data = row.json;\n  // Adjust 'Link' or 'Site' matches your actual column name in Google Sheets\n  let url = data['Link'] || data['Site'] || data['url']; \n\n  if (url && typeof url === 'string') {\n    try {\n      const cleanDomain = url.toLowerCase()\n        .trim()\n        .replace(/^https?:\\/\\//, '')\n        .replace(/^www\\./, '')\n        .split('/')[0];\n\n      if (cleanDomain && !cleanDomain.includes('google') && !cleanDomain.includes('amazon')) {\n        extractedDomains.push(cleanDomain);\n      }\n    } catch (e) {}\n  }\n}\n\n// 2. Select Dynamic Competitors\n// If we have sheet data, use the last few found. If not, use Master List.\nconst uniqueFound = [...new Set(extractedDomains)];\nconst dynamicSources = uniqueFound.length > 0 ? uniqueFound.slice(-MAX_COMPETITORS) : masterCompetitors.slice(0, MAX_COMPETITORS);\n\n// 3. Build Exclusion Strings (The \"Safety\" Logic)\nconst socialBlockStr = tierA_Social.map(d => `-site:${d}`).join(' ');\n// We only take the first 6 directories to ensure we stay under the word limit\nconst directoryBlockStr = tierB_Directories.slice(0, 6).map(d => `-site:${d}`).join(' ');\n\n// Combined Negatives for Static Search (Heaviest Filtering)\nconst staticNegatives = `${socialBlockStr} ${directoryBlockStr} -\"Managed Services\" -\"Book a Call\"`;\n\n// Light Negatives for Competitor Search (To avoid breaking 'related:')\nconst competitorNegatives = `${socialBlockStr}`;\n\n// 4. Calculate Weekly Rotation\nconst now = new Date();\nconst start = new Date(now.getFullYear(), 0, 0);\nconst diff = now - start;\nconst oneWeek = 1000 * 60 * 60 * 24 * 7;\nconst absoluteWeek = Math.floor(diff / oneWeek);\n\n// Pick the angle for this week\nconst currentAngle = staticAngles[absoluteWeek % staticAngles.length];\n\n// ============================================================\n// 📤 GENERATE OUTPUT ITEMS\n// ============================================================\nconst newItems = [];\n\n// --- A. STATIC BATCH (The \"Fresh Blood\") ---\n// This finds completely new companies we don't know yet.\n// Logic: Query + Strict Negatives\nconst staticQuery = `${currentAngle} ${staticNegatives}`;\n\nfor (let i = 1; i <= (STATIC_PAGES * 10); i += 10) {\n  newItems.push({\n    json: {\n      start_index: i,\n      search_query: staticQuery,\n      meta_type: \"Static Angle\",\n      meta_topic: currentAngle,\n      meta_week: absoluteWeek\n    }\n  });\n}\n\n// --- B. DYNAMIC BATCH (The \"Clone\" Engine) ---\n// This finds companies similar to the ones you ALREADY found.\n// Logic: related:domain.com -site:domain.com + Light Negatives\nfor (const domain of dynamicSources) {\n  \n  const dynamicQuery = `related:${domain} -site:${domain} ${competitorNegatives}`;\n  \n  for (let i = 1; i <= (COMPETITOR_PAGES * 10); i += 10) { \n    newItems.push({\n      json: {\n        start_index: i,\n        search_query: dynamicQuery,\n        meta_type: \"Competitor Lookalike\",\n        meta_source: domain\n      }\n    });\n  }\n}\n\nreturn newItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        0
+      ],
+      "id": "2a594a71-88d0-436d-a086-ec81662b74eb",
+      "name": "DORK + Page Index"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1skULZrOxAuJhIFSHM5bGN3L2xiLYdjTLGP6mc4Az8u4",
+          "mode": "list",
+          "cachedResultName": "Amzon PPC Saas Providers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1skULZrOxAuJhIFSHM5bGN3L2xiLYdjTLGP6mc4Az8u4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "All",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1skULZrOxAuJhIFSHM5bGN3L2xiLYdjTLGP6mc4Az8u4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -928,
+        0
+      ],
+      "id": "27655e2c-ae03-4cca-8b9f-234a4c15bb34",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MYc6onsb7Axtmftj",
+          "name": "Kabir (GC) NH"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        576,
+        624
+      ],
+      "id": "53c91c84-51f4-4c34-955d-85eb64cd2e68",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all data coming from the Merge node\nconst items = $input.all();\n\n// 1. Create a dictionary (map) to store the site dumps\n// Key = URL, Value = Content\nconst siteDumps = {};\n\n// Helper function to clean URLs (removes trailing '/' for better matching)\n// e.g. \"google.com/\" becomes \"google.com\"\nconst normalizeUrl = (url) => {\n  if (!url) return '';\n  return url.trim().replace(/\\/$/, '').toLowerCase();\n};\n\n// 2. First Pass: Loop through all items to find the \"Scraped\" data\nitems.forEach(item => {\n  const data = item.json;\n  \n  // Check if this item is a Site Dump (has 'url' and 'content')\n  if (data.url && data.content) {\n    const cleanKey = normalizeUrl(data.url);\n    siteDumps[cleanKey] = data.content;\n  }\n});\n\n// 3. Second Pass: Loop through items to find \"Company\" data and enrich it\nconst result = [];\n\nitems.forEach(item => {\n  const data = item.json;\n\n  // Check if this item is Company Data (has 'Site URL')\n  // We exclude items that are just the raw dumps (which usually don't have 'company_name')\n  if (data['Site URL'] && data.company_name) {\n    \n    const lookupUrl = normalizeUrl(data['Site URL']);\n    \n    // Check if we have a dump for this URL\n    if (siteDumps[lookupUrl]) {\n      // Add the new field\n      data.site_dump = siteDumps[lookupUrl];\n    } else {\n      // Optional: Add a placeholder if no dump is found\n      data.site_dump = \"No dump found\"; \n    }\n\n    // Add to final result\n    result.push(item);\n  }\n});\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        864
+      ],
+      "id": "32e74cc4-b2ea-4005-abb5-cdd75f9b0cd9",
+      "name": "Structure for Email Draft & Linkedin Draft"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={\"site_dump\": \"{{ $json.site_dump }}\"}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are Kabir, a B2B Sales Expert at \"ClimbWith.ai\", an agency specializing in **Framer Website Redesign & Development**.\nI will provide you with details about a potential client.\n\n### YOUR GOAL\nWrite a highly personalized **Cold Email** and a **LinkedIn Message** to pitch a website modernization.\n\n### FATAL ERROR PREVENTION (READ CAREFULLY)\n1. **JSON ONLY:** Output **only** a valid JSON string. Do not output markdown (```json), do not output \"Here is the JSON\", do not output any introductory text.\n2. **NO HALLUCINATIONS:** Echo the input data (Company, URL, etc.) exactly as provided. Do not change them.\n3. **NAME SAFETY:** If `decision_maker_name` is \"Unknown\", \"null\", or empty, you MUST use \"Team\" in the drafts. NEVER write \"Hey Unknown\".\n\n### DRAFTING INSTRUCTIONS\n\n#### 1. ANALYZE THE SITE DUMP (The \"Audit\" Hook)\nScan the `site_dump` to find a **Specific Detail** that proves you visited their site.\n- **Look For:** A flagship feature (e.g., \"AI Automation\"), a specific target audience (e.g., \"Aggregators\"), or a recent headline.\n- **Context:** You are a designer looking at their site. Choose a hook that implies you were studying their positioning.\n\n#### 2. WRITE THE EMAIL DRAFT\n- **Subject:** \"Quick question about your website performance\" OR \"question about {{ $json.company_name }}'s site\"\n- **Salutation:** Hi [Name],\n- **The Opener:** \"I came across {{ $json.company_name }} while working on a few site audits this week and [Insert Specific Hook from Site Dump].\"\n- **The Pitch:** \"We’ve been helping teams replace outdated or underperforming websites with conversion-ready **Framer** builds that quietly drive more inbound without increasing ad spend. No long rebuild cycles. No bloated scopes. Just clean execution tied to revenue signals.\"\n- **CTA:** \"If you’re open, I’d suggest a quick 15-minute call to share what we’re seeing across similar companies. Worth a short conversation?\"\n- **Sign-off:** Best, Kabir | ClimbWith.ai\n\n#### 3. WRITE THE LINKEDIN DRAFT\n- **Subject Line:** Short and casual. E.g., \"question about [Company]\", \"website performance\", or \"quick note\".\n- **Template:**\n  Subject: [Insert Generated Subject]\n  \n  Hey [Name] — quick note. [Short Hook, e.g., \"Saw the new AI features.\"].\n  \n  We’ve been helping teams modernize their websites into revenue-ready assets without full rebuild chaos. Mostly focused on conversion, speed, and automation-driven follow-up.\n  \n  If you’re open, happy to share a few patterns we’re seeing in a short intro call.\n  \n  Kabir\n\n### REQUIRED JSON OUTPUT\nReturn strictly raw JSON. Start with { and end with }.\n\n{\n  \"company_name\": \"{{ $json.company_name }}\",\n  \"location\": \"{{ $json.location }}\",\n  \"employee_count_estimate\": \"{{ $json.employee_count_estimate }}\",\n  \"copyright_year\": \"{{ $json.copyright_year }}\",\n  \"decision_maker_name\": \"{{ $json.decision_maker_name }}\",\n  \"decision_maker_title\": \"{{ $json.decision_maker_title }}\",\n  \"contact_email\": \"{{ $json.contact_email }}\",\n  \"phone_number\": \"{{ $json.phone_number }}\",\n  \"Site URL\": \"{{ $json['Site URL'] }}\",\n  \"linkedin_profile\": \"{{ $json.linkedin_profile }}\",\n  \"wordpress_version\": \"{{ $json.wordpress_version }}\",\n  \"email_draft\": \"Subject: [Subject]\\n\\n[Body]\",\n  \"linkedin_draft\": \"Subject: [Subject]\\n\\nHey [Name]...\"\n}"
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 1,
+          "delayBetweenBatches": 100
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        160,
+        896
+      ],
+      "id": "c4f8f97a-867e-4122-b299-fb0a11030674",
+      "name": "Basic LLM Chain2",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash-lite",
+        "options": {
+          "responseFormat": "json_object",
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        960
+      ],
+      "id": "a46421df-9152-4a18-8f0b-9e788a1f1beb",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "zM5yQy9aQUY1TvmX",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Search": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "GET Links",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "PPC Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Links": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wordpress Fingerprint": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Append Version",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Duplicate Remover",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Duplicate Remover": {
+      "main": [
+        [
+          {
+            "node": "Wordpress Fingerprint",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Version": {
+      "main": [
+        [
+          {
+            "node": "Fix Mobile No",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PPC Check": {
+      "main": [
+        [
+          {
+            "node": "US & UK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "US & UK": {
+      "main": [
+        [
+          {
+            "node": "Linkedin Search For Name",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Linkedin Search For Name": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix Mobile No": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Format": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor and get dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor and get dataset": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DORK + Page Index": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "DORK + Page Index",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Structure for Email Draft & Linkedin Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structure for Email Draft & Linkedin Draft": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/New_York",
+    "saveDataErrorExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 60,
+    "errorWorkflow": "w6tx14IkhG7DnWvK"
+  },
+  "versionId": "84c9a606-2dc7-4bf9-b5cf-7ae1f1b5eb29",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f2c427e323f736161796dc823c27ddb03dacab83aef8c91924ec5ea7d599b0c7"
+  },
+  "id": "zGt0KTXCZxxiLTJR",
+  "tags": []
+}
