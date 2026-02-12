@@ -19,43 +19,98 @@
     }
   },
   {
-    "id": "linkedin-scraper",
-    "title": "LinkedIn Data Extractor",
-    "type": "Internal Tool",
-    "metric": "0% Ban Rate",
-    "tags": ["Python", "API Reverse Eng", "Chrome"],
+    "id": "job-hunter-automation",
+    "title": "Automated Job Hunter (CA/Tally)",
+    "type": "Pro Bono / Friend",
+    "metric": "Daily Job Feed",
+    "tags": ["n8n", "Gemini", "Google Search API"],
     "images": [
-        "https://placehold.co/1200x800/111827/4ade80?text=Chrome+Extension+UI",
-        "https://placehold.co/1200x800/111827/4ade80?text=JSON+Data+Structure"
+        "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Arfajul%20-%20n8n.png?raw=true"
     ],
     "video_embed": "",
     "workflow_download": "",
-    "description": "A stealth extraction tool that bypasses anti-bot measures to collect public profile data securely.",
+    "description": "An automated recruitment assistant that scans the web for specific niche accounting roles in Kolkata.",
     "full_details": {
-      "problem": "Standard scraping tools get blocked by LinkedIn immediately. My client needed market data but couldn't get it reliably.",
-      "solution": "I reverse-engineered the internal API calls. Instead of 'attacking' the site, I built a Chrome Extension that piggybacks on valid user sessions to fetch data naturally.",
-      "tech_stack": ["Python", "Chrome Ext", "Network Analysis"],
-      "result": "Stable, long-term data collection with zero account flags or IP bans."
+      "problem": "My friend was wasting hours manually searching for specific 'Tally Accountant' and 'CA' roles in Kolkata. He needed to focus on applying, not searching.",
+      "solution": "I built a workflow that hits the Google Search API for fresh job listings. It scrapes the page content and uses Gemini AI to filter out irrelevant listings, delivering a clean list of opportunities directly to him.",
+      "tech_stack": ["n8n", "Google Search API", "Gemini AI", "Google Sheets"],
+      "result": "He stopped searching manually and now just wakes up to a curated list of jobs to apply to."
     }
   },
   {
-    "id": "invoice-agent",
-    "title": "AI Invoice Accountant",
-    "type": "Client Project",
-    "metric": "100% Automated",
-    "tags": ["n8n", "OpenAI", "Gmail"],
+    "id": "bug-bounty-scanner",
+    "title": "Bug Bounty Scope Scanner",
+    "type": "Community Tool",
+    "metric": "High-Quality Targets",
+    "tags": ["n8n", "Cybersecurity", "Automation"],
     "images": [
-        "https://placehold.co/1200x800/111827/4ade80?text=AI+Vision+Logic",
-        "https://placehold.co/1200x800/111827/4ade80?text=Email+Trigger+Setup"
+        "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Bug%20Bounty%20Programs%20Finder%20-%20n8n.png?raw=true"
     ],
-    "video_embed": "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    "workflow_download": "https://github.com/0bl1vyx",
-    "description": "An AI agent that reads incoming invoice PDFs (even handwritten ones) and updates the accounting software.",
+    "video_embed": "",
+    "workflow_download": "",
+    "description": "A reconnaissance tool for ethical hackers that identifies new, self-hosted bug bounty programs automatically.",
     "full_details": {
-        "problem": "A business owner was drowning in PDF invoices. OCR tools couldn't read the handwritten notes, leading to hours of data entry.",
-        "solution": "I connected Gmail to n8n and OpenAI's Vision model. The AI 'looks' at the PDF like a human would, extracts the specific numbers, and formats them for the database.",
-        "tech_stack": ["n8n", "GPT-4o", "Gmail API", "JSON"],
-        "result": "Completely removed the owner from the loop. The system handles 100+ invoices a month automatically."
+      "problem": "As a former bug hunter, I knew the pain of finding good programs. Most hunters spend more time looking for targets than actually hacking.",
+      "solution": "I automated the recon phase. This workflow runs on a schedule, finding new self-hosted programs via Google Dorks. It uses an LLM to analyze the program's scope and rules, ensuring it's a 'safe' and valid target before alerting the team.",
+      "tech_stack": ["n8n", "Google Dorks", "Gemini", "Schedule Trigger"],
+      "result": "My old team receives a stream of fresh, uncrowded targets to hunt on, giving them a first-mover advantage."
+    }
+  },
+  {
+    "id": "framer-ai-responder",
+    "title": "Instant AI Form Responder",
+    "type": "Client Prototype",
+    "metric": "<60s Response Time",
+    "tags": ["n8n", "Webhook", "OpenRouter"],
+    "images": [
+        "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Form%20Response%20-%20n8n.png?raw=true"
+    ],
+    "video_embed": "",
+    "workflow_download": "",
+    "description": "A webhook-based system that drafts and sends hyper-personalized emails instantly after a user fills a form.",
+    "full_details": {
+      "problem": "A client wanted to impress leads filling out their Framer website form. Standard auto-responders felt robotic and cold.",
+      "solution": "I set up a Webhook to catch the Framer form data. An AI Agent analyzes the user's specific query and writes a custom email (not a template) addressing their exact points, then sends it via Gmail immediately.",
+      "tech_stack": ["n8n", "Webhook", "OpenRouter", "Gmail"],
+      "result": "Leads receive a thoughtful, personalized reply within seconds of hitting submit, drastically increasing conversion rates."
+    }
+  },
+  {
+    "id": "gym-lead-scraper",
+    "title": "Gym Website Lead Gen",
+    "type": "Client Project",
+    "metric": "Local Lead Extraction",
+    "tags": ["n8n", "Google Maps", "Data Cleaning"],
+    "images": [
+        "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Lead%20Finder%20Gym%20Landing%20Pages%20-%20n8n.png?raw=true"
+    ],
+    "video_embed": "",
+    "workflow_download": "",
+    "description": "A Google Maps scraper that identifies local businesses without websites for web development pitching.",
+    "full_details": {
+      "problem": "My client sells web development services to gyms in Kolkata but couldn't easily find which ones didn't have a website.",
+      "solution": "I built an n8n workflow that scrapes Google Maps results for local gyms. It filters specifically for entries missing a 'Website' link, removes duplicates, and extracts phone numbers for the sales team.",
+      "tech_stack": ["n8n", "Apify (G-Maps)", "Google Sheets", "Deduplication"],
+      "result": "Generated a highly targeted list of 500+ local gyms that actually needed the client's service."
+    }
+  },
+  {
+    "id": "personal-ai-agent",
+    "title": "0bl1vyx Personal Agent",
+    "type": "Internal Tool",
+    "metric": "All-in-One Assistant",
+    "tags": ["n8n", "AI Agent", "Function Calling"],
+    "images": [
+        "https://github.com/0bl1vyx/n8n-portfolio/blob/main/Images/Personal%20Agent%20-%20n8n.png?raw=true"
+    ],
+    "video_embed": "",
+    "workflow_download": "",
+    "description": "My personal 'Second Brain'. An AI agent equipped with tools to manage my life, code, and scheduling.",
+    "full_details": {
+      "problem": "I needed a central AI interface that knew *me*—my context, my files, and my preferences—unlike generic ChatGPT.",
+      "solution": "I built a fully featured AI Agent in n8n with 'Tool Calling' capabilities. It can browse the live web, check the weather, perform complex calculations, and read/write to my personal database (Google Sheets).",
+      "tech_stack": ["n8n", "LangChain Tools", "Groq", "Google Gemini"],
+      "result": "A personalized assistant that acts as a force multiplier for my daily productivity."
     }
   }
 ]
