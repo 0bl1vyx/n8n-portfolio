@@ -9,6 +9,7 @@
     
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -17,13 +18,14 @@
                     },
                     colors: {
                         accent: { 400: '#4ade80', 500: '#22c55e', 600: '#16a34a', glow: 'rgba(74, 222, 128, 0.4)' },
-                        bg: { main: '#030303', card: '#0a0a0a', border: '#1f1f1f' }
+                        terminal: { bg: '#050505', text: '#00ff41', dim: '#003b00' }
                     },
                     animation: {
                         'scroll': 'scroll 40s linear infinite',
                         'blob': 'blob 10s infinite',
                         'typewriter': 'typewriter 2s steps(40) 1s 1 normal both',
                         'blink': 'blink 1s step-end infinite',
+                        'scanline': 'scanline 8s linear infinite',
                     },
                     keyframes: {
                         scroll: {
@@ -43,6 +45,10 @@
                         blink: {
                             '0%, 100%': { borderColor: 'transparent' },
                             '50%': { borderColor: '#4ade80' },
+                        },
+                        scanline: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(100%)' }
                         }
                     }
                 }
@@ -50,12 +56,62 @@
         }
     </script>
     <style>
+        :root {
+            --cursor-color: #4ade80;
+            --bg-color: #030303;
+            --text-color: #e5e5e5;
+        }
+
         body { 
-            background-color: #030303; 
-            color: #e5e5e5; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
             cursor: none; 
             overflow-x: hidden;
+            transition: background-color 0.5s, color 0.5s;
         }
+
+        /* --- TERMINAL MODE OVERRIDES --- */
+        body.terminal-mode {
+            --cursor-color: #00ff41;
+            --bg-color: #000000;
+            --text-color: #00ff41;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        body.terminal-mode .aurora-blob { opacity: 0; }
+        body.terminal-mode .glass-card {
+            background: #000;
+            border: 1px solid #00ff41;
+            backdrop-filter: none;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        body.terminal-mode h1, body.terminal-mode h2, body.terminal-mode h3 {
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        body.terminal-mode .magnetic-btn {
+            border-radius: 0;
+            border: 1px solid #00ff41;
+            background: transparent;
+            color: #00ff41;
+            box-shadow: none !important;
+        }
+        body.terminal-mode .magnetic-btn:hover {
+            background: #00ff41;
+            color: #000;
+        }
+        
+        /* CRT Scanline Effect for Terminal */
+        .scanline-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            pointer-events: none; z-index: 999;
+        }
+        body.terminal-mode .scanline-overlay { display: block; }
 
         /* --- AURORA BACKGROUND --- */
         .aurora-blob {
@@ -66,25 +122,11 @@
             pointer-events: none; z-index: 0;
             filter: blur(80px);
             animation: blob 20s infinite alternate;
+            transition: opacity 0.5s;
         }
-        .aurora-1 { top: -10%; left: -10%; animation-delay: 0s; background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, rgba(0,0,0,0) 70%); }
-        .aurora-2 { top: 40%; right: -20%; animation-delay: -5s; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(0,0,0,0) 70%); }
-        .aurora-3 { bottom: -20%; left: 20%; animation-delay: -10s; background: radial-gradient(circle, rgba(5, 150, 105, 0.1) 0%, rgba(0,0,0,0) 70%); }
-
-        /* --- GRID OVERLAY --- */
-        .bg-grid {
-            background-size: 60px 60px;
-            background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-            pointer-events: none; z-index: 1;
-        }
-
-        /* --- MAGNETIC BUTTONS --- */
-        .magnetic-btn {
-            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
+        .aurora-1 { top: -10%; left: -10%; animation-delay: 0s; }
+        .aurora-2 { top: 40%; right: -20%; animation-delay: -5s; }
+        .aurora-3 { bottom: -20%; left: 20%; animation-delay: -10s; }
 
         /* --- 3D TILT CARD --- */
         .tilt-card {
@@ -99,171 +141,149 @@
             border-color: rgba(34, 197, 94, 0.5);
             box-shadow: 0 20px 50px -20px rgba(34, 197, 94, 0.2);
         }
-        .tilt-inner {
-            transform: translateZ(20px);
-        }
+        .tilt-inner { transform: translateZ(20px); }
 
         /* --- CURSOR --- */
         .cursor-dot, .cursor-outline {
             position: fixed; top: 0; left: 0; transform: translate(-50%, -50%);
             border-radius: 50%; pointer-events: none; z-index: 9999;
         }
-        .cursor-dot { width: 8px; height: 8px; background-color: #4ade80; box-shadow: 0 0 10px #4ade80; }
+        .cursor-dot { width: 8px; height: 8px; background-color: var(--cursor-color); }
         .cursor-outline {
-            width: 40px; height: 40px; border: 1px solid rgba(74, 222, 128, 0.3);
-            transition: width 0.2s, height 0.2s, background-color 0.2s, border-color 0.2s;
+            width: 40px; height: 40px; border: 1px solid var(--cursor-color);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            opacity: 0.5;
         }
+        body.terminal-mode .cursor-outline { border-radius: 0; border-style: dashed; }
+        body.terminal-mode .cursor-dot { border-radius: 0; }
+        
         body.hovering .cursor-outline {
-            width: 60px; height: 60px; background-color: rgba(74, 222, 128, 0.05);
-            border-color: #4ade80; mix-blend-mode: screen;
+            width: 60px; height: 60px; background-color: rgba(74, 222, 128, 0.1);
+            border-color: var(--cursor-color);
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         .typewriter-cursor {
-            border-right: 2px solid #4ade80;
-            white-space: nowrap;
-            overflow: hidden;
-            display: inline-block;
-            vertical-align: bottom;
+            border-right: 2px solid var(--cursor-color);
+            white-space: nowrap; overflow: hidden; display: inline-block; vertical-align: bottom;
         }
+
+        /* --- TOGGLE SWITCH --- */
+        .toggle-checkbox { display: none; }
+        .toggle-label {
+            width: 50px; height: 26px; background-color: #333; border-radius: 50px; cursor: pointer; position: relative;
+            border: 1px solid #555;
+        }
+        .toggle-label::after {
+            content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+            background-color: white; border-radius: 50%; transition: 0.3s;
+        }
+        .toggle-checkbox:checked + .toggle-label { background-color: #00ff41; border-color: #00ff41; }
+        .toggle-checkbox:checked + .toggle-label::after { transform: translateX(24px); background-color: black; }
     </style>
 </head>
 <body class="antialiased selection:bg-accent-500/30 selection:text-white relative">
 
+    <div class="scanline-overlay"></div>
+
     <div class="aurora-blob aurora-1"></div>
     <div class="aurora-blob aurora-2"></div>
     <div class="aurora-blob aurora-3"></div>
-    <div class="fixed inset-0 z-1 bg-grid"></div>
+    <div class="fixed inset-0 z-1 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
 
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
 
-    <nav class="fixed top-0 w-full z-50 border-b border-white/5 bg-black/50 backdrop-blur-xl">
+    <nav class="fixed top-0 w-full z-50 border-b border-white/5 bg-black/50 backdrop-blur-xl transition-all duration-300">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
             <div class="text-base font-bold tracking-tight flex items-center gap-2 group cursor-pointer" onclick="window.scrollTo(0,0)" onmouseenter="cursorHover()" onmouseleave="cursorLeave()">
                 <span class="text-accent-500 font-mono text-xl group-hover:rotate-12 transition-transform">./</span> 
-                <span class="tracking-widest group-hover:text-white transition-colors">PRIYO DAS</span>
+                <span class="tracking-widest group-hover:text-accent-400 transition-colors" id="brand-name">PRIYO DAS</span>
             </div>
+
             <div class="flex items-center gap-6">
-                <a href="mailto:priyodas567@gmail.com" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="magnetic-btn text-xs font-bold bg-white text-black hover:bg-accent-400 px-6 py-3 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(74,222,128,0.5)] hover:scale-105">
-                    Start a Project
+                <div class="flex items-center gap-2" onmouseenter="cursorHover()" onmouseleave="cursorLeave()">
+                    <span class="text-[10px] font-mono uppercase text-gray-500 tracking-wider hidden md:block" id="mode-text">GUI MODE</span>
+                    <input type="checkbox" id="terminal-toggle" class="toggle-checkbox">
+                    <label for="terminal-toggle" class="toggle-label"></label>
+                </div>
+
+                <a href="https://www.linkedin.com/in/0bl1vyx/" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="hidden md:flex magnetic-btn text-xs font-bold bg-white text-black hover:bg-accent-400 px-6 py-3 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+                    Connect
                 </a>
             </div>
         </div>
     </nav>
 
     <header class="max-w-6xl mx-auto px-6 pt-40 md:pt-56 pb-20 md:pb-32 relative z-10">
-        <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-10 hover:border-accent-500/50 transition-colors cursor-default">
+        <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-10 cursor-default">
             <span class="relative flex h-2.5 w-2.5">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent-500"></span>
             </span>
-            <span class="text-xs font-mono text-gray-300 tracking-wide">SYSTEMS ONLINE • AVAILABLE</span>
+            <span class="text-xs font-mono text-gray-300 tracking-wide">SYSTEMS ONLINE</span>
         </div>
 
-        <h1 class="text-5xl md:text-8xl font-extrabold text-white mb-8 tracking-tight leading-[1.1]">
-            I build systems that <br>
+        <h1 class="text-5xl md:text-8xl font-extrabold mb-8 tracking-tight leading-[1.1]">
+            Automating the <br>
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 via-emerald-400 to-cyan-500 typewriter-cursor animate-typewriter animate-blink">
-                run your business.
+                impossible.
             </span>
         </h1>
         
         <p class="text-lg md:text-2xl text-gray-400 mb-12 leading-relaxed max-w-3xl font-light">
-            Stop pasting data into spreadsheets. I architect custom 
-            <span class="text-white font-medium border-b border-accent-500/30">n8n workflows</span>, 
-            <span class="text-white font-medium border-b border-accent-500/30">AI agents</span>, and
-            <span class="text-white font-medium border-b border-accent-500/30">scrapers</span> 
-            that operate completely autonomously.
+            I don't just build workflows. I architect self-healing 
+            <span class="text-accent-400 font-mono text-base bg-accent-400/10 px-1 rounded">n8n</span> systems, 
+            intelligent agents, and data pipelines for businesses that have outgrown "basic."
         </p>
         
         <div class="flex flex-col md:flex-row gap-5">
             <a href="#work" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="magnetic-btn px-8 py-4 bg-accent-600 hover:bg-accent-500 text-white font-bold rounded-lg transition-all shadow-[0_0_30px_-10px_rgba(34,197,94,0.6)] flex items-center justify-center gap-3 text-sm tracking-wide uppercase group">
-                Explore Workflows
+                <span class="font-mono">./View_Protocols</span>
                 <svg class="w-4 h-4 group-hover:translate-y-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
             </a>
-
-            <a href="https://www.linkedin.com/in/0bl1vyx/" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="magnetic-btn px-8 py-4 border border-white/10 hover:border-[#0077b5]/50 bg-white/5 hover:bg-[#0077b5]/10 text-gray-300 hover:text-white font-medium rounded-lg transition-all flex items-center justify-center gap-3 text-sm tracking-wide uppercase group">
-                <svg class="w-5 h-5 text-gray-500 group-hover:text-[#0077b5] transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                Connect on LinkedIn
+            
+            <a href="mailto:priyodas567@gmail.com" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="magnetic-btn px-8 py-4 border border-white/10 hover:border-white text-gray-300 hover:text-white font-medium rounded-lg transition-all flex items-center justify-center gap-3 text-sm tracking-wide uppercase font-mono">
+                Initialize_Contact()
             </a>
         </div>
     </header>
 
-    <div class="border-y border-white/5 bg-black/40 overflow-hidden relative z-20 py-10 backdrop-blur-sm">
-        <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-bg-main to-transparent z-20"></div>
-        <div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-bg-main to-transparent z-20"></div>
-
+    <div class="border-y border-white/5 bg-black/40 overflow-hidden relative z-20 py-6 backdrop-blur-sm">
         <div class="flex animate-scroll w-[200%]">
-            <div class="flex gap-16 items-center whitespace-nowrap px-8">
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-accent-500">⚡</span> n8n Workflow Automation</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-blue-400">🤖</span> OpenAI GPT-4o</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-purple-400">💎</span> Google Gemini 1.5 Pro</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-yellow-400">📜</span> JavaScript & Node.js</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-orange-400">🕷️</span> Puppeteer Scraping</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-cyan-400">🐳</span> Docker & Self-Hosting</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-green-400">📊</span> Google Sheets API</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3 ml-16"><span class="text-accent-500">⚡</span> n8n Workflow Automation</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-blue-400">🤖</span> OpenAI GPT-4o</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-purple-400">💎</span> Google Gemini 1.5 Pro</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-yellow-400">📜</span> JavaScript & Node.js</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-orange-400">🕷️</span> Puppeteer Scraping</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-cyan-400">🐳</span> Docker & Self-Hosting</span>
-                <span class="text-xl font-bold text-gray-400 flex items-center gap-3"><span class="text-green-400">📊</span> Google Sheets API</span>
+            <div class="flex gap-16 items-center whitespace-nowrap px-8 font-mono text-sm text-accent-500/70">
+                <span>[n8n_CORE]</span>
+                <span>[PUPPETEER_SCRAPER]</span>
+                <span>[OPENAI_API]</span>
+                <span>[GEMINI_1.5_PRO]</span>
+                <span>[JAVASCRIPT_NODE]</span>
+                <span>[DOCKER_CONTAINERS]</span>
+                <span>[POSTGRES_DB]</span>
+                <span>[WEBHOOKS]</span>
+                <span>[n8n_CORE]</span>
+                <span>[PUPPETEER_SCRAPER]</span>
+                <span>[OPENAI_API]</span>
+                <span>[GEMINI_1.5_PRO]</span>
+                <span>[JAVASCRIPT_NODE]</span>
+                <span>[DOCKER_CONTAINERS]</span>
+                <span>[POSTGRES_DB]</span>
+                <span>[WEBHOOKS]</span>
             </div>
         </div>
     </div>
 
-    <section class="max-w-7xl mx-auto px-6 py-32 relative z-10">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="tilt-card p-10 rounded-2xl group cursor-default" onmousemove="tiltCard(event)" onmouseleave="resetTilt(event)" onmouseenter="cursorHover()">
-                <div class="tilt-inner">
-                    <div class="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-8 text-accent-400 group-hover:scale-110 transition-transform duration-300 border border-white/5 group-hover:border-accent-500/30">
-                        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-                    </div>
-                    <h3 class="text-white font-bold text-2xl mb-4 group-hover:text-accent-400 transition-colors">Complex Logic</h3>
-                    <p class="text-gray-400 leading-relaxed font-light">
-                        I don't just zap data. I build logic-heavy workflows with conditional branching, error handling, retries, and data normalization.
-                    </p>
-                </div>
-            </div>
-            
-            <div class="tilt-card p-10 rounded-2xl group cursor-default" onmousemove="tiltCard(event)" onmouseleave="resetTilt(event)" onmouseenter="cursorHover()">
-                <div class="tilt-inner">
-                    <div class="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-8 text-accent-400 group-hover:scale-110 transition-transform duration-300 border border-white/5 group-hover:border-accent-500/30">
-                        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    </div>
-                    <h3 class="text-white font-bold text-2xl mb-4 group-hover:text-accent-400 transition-colors">Scale Ready</h3>
-                    <p class="text-gray-400 leading-relaxed font-light">
-                        Systems designed to handle thousands of executions. Built on robust self-hosted n8n instances on Linux servers.
-                    </p>
-                </div>
-            </div>
-
-            <div class="tilt-card p-10 rounded-2xl group cursor-default" onmousemove="tiltCard(event)" onmouseleave="resetTilt(event)" onmouseenter="cursorHover()">
-                <div class="tilt-inner">
-                    <div class="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-8 text-accent-400 group-hover:scale-110 transition-transform duration-300 border border-white/5 group-hover:border-accent-500/30">
-                        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                    </div>
-                    <h3 class="text-white font-bold text-2xl mb-4 group-hover:text-accent-400 transition-colors">Security First</h3>
-                    <p class="text-gray-400 leading-relaxed font-light">
-                        Your data stays safe. I implement secure API authentication, environment variable management, and ethical scraping practices.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <main id="work" class="max-w-7xl mx-auto px-6 py-12 relative z-10">
+    <main id="work" class="max-w-7xl mx-auto px-6 py-24 relative z-10">
         <div class="flex items-end justify-between mb-16">
             <div>
-                <h2 class="text-4xl text-white font-bold mb-4 flex items-center gap-4">
+                <h2 class="text-4xl font-bold mb-4 flex items-center gap-4">
                     <span class="w-3 h-10 bg-accent-500 rounded-full shadow-[0_0_20px_#22c55e]"></span>
-                    Recent Deployments
+                    Deployed Architectures
                 </h2>
-                <p class="text-gray-400 max-w-xl font-light">
-                    Real-world automation systems running in production environments.
+                <p class="text-gray-400 max-w-xl font-light font-mono text-sm mt-4">
+                    > Accessing project database...<br>
+                    > 8 records found.
                 </p>
             </div>
         </div>
@@ -272,27 +292,59 @@
             </div>
     </main>
 
-    <footer class="border-t border-white/5 bg-black/40 relative z-10 mt-32 backdrop-blur-lg">
+    <div class="fixed bottom-0 left-0 w-full bg-black/80 backdrop-blur-md border-t border-white/10 z-40 py-2 px-6 flex justify-between items-center text-[10px] md:text-xs font-mono text-gray-500 uppercase">
+        <div class="flex items-center gap-4">
+            <span class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-accent-500 rounded-full animate-pulse"></span>
+                System Operational
+            </span>
+            <span class="hidden md:inline">|</span>
+            <span class="hidden md:inline">Loc: Kolkata, IN</span>
+        </div>
+        <div id="clock">00:00:00 UTC</div>
+    </div>
+
+    <footer class="border-t border-white/5 bg-black/40 relative z-10 mt-32 pb-20 backdrop-blur-lg">
         <div class="max-w-7xl mx-auto px-6 py-16 flex flex-col md:flex-row justify-between items-center gap-8">
             <div class="text-center md:text-left">
-                <div class="text-xl font-bold text-white mb-2 tracking-tight">Priyo Das</div>
-                <p class="text-gray-500 text-sm font-light">Automation Specialist & Full Stack Developer</p>
-                <div class="text-gray-600 text-xs mt-4 font-mono">LOCATION: KOLKATA, INDIA</div>
+                <div class="text-xl font-bold mb-2 tracking-tight font-mono">0bl1vyx</div>
+                <p class="text-gray-500 text-sm font-light">End of Stream.</p>
             </div>
             <div class="flex gap-4">
-                <a href="mailto:priyodas567@gmail.com" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="magnetic-btn text-gray-400 hover:text-white hover:bg-white/5 px-4 py-2 rounded-lg transition-all flex items-center gap-2">
-                    ✉️ Email Me
-                </a>
-                <a href="https://www.linkedin.com/in/0bl1vyx/" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="magnetic-btn text-gray-400 hover:text-white hover:bg-[#0077b5]/20 px-4 py-2 rounded-lg transition-all flex items-center gap-2">
-                    🔗 LinkedIn
-                </a>
+                <a href="https://www.linkedin.com/in/0bl1vyx/" target="_blank" class="text-gray-400 hover:text-accent-500 transition-colors">LinkedIn</a>
+                <a href="mailto:priyodas567@gmail.com" class="text-gray-400 hover:text-accent-500 transition-colors">Email</a>
             </div>
         </div>
     </footer>
 
     <script>
+        // --- TERMINAL MODE TOGGLE ---
+        const toggle = document.getElementById('terminal-toggle');
+        const modeText = document.getElementById('mode-text');
+        
+        toggle.addEventListener('change', () => {
+            document.body.classList.toggle('terminal-mode');
+            if(document.body.classList.contains('terminal-mode')) {
+                modeText.innerText = "TERM_ACC";
+                document.getElementById('brand-name').innerText = "root@0bl1vyx:~#";
+            } else {
+                modeText.innerText = "GUI MODE";
+                document.getElementById('brand-name').innerText = "PRIYO DAS";
+            }
+        });
+
+        // --- CLOCK ---
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toISOString().split('T')[1].split('.')[0] + " UTC";
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
         // --- 3D TILT EFFECT ---
         function tiltCard(e) {
+            if(document.body.classList.contains('terminal-mode')) return; // Disable tilt in terminal mode
+            
             const card = e.currentTarget;
             const rect = card.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -301,8 +353,8 @@
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
             
-            const rotateX = ((y - centerY) / centerY) * -5; // Max 5deg tilt
-            const rotateY = ((x - centerX) / centerX) * 5;
+            const rotateX = ((y - centerY) / centerY) * -3; 
+            const rotateY = ((x - centerX) / centerX) * 3;
 
             card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
         }
@@ -316,6 +368,7 @@
         const magneticBtns = document.querySelectorAll('.magnetic-btn');
         magneticBtns.forEach(btn => {
             btn.addEventListener('mousemove', function(e) {
+                if(document.body.classList.contains('terminal-mode')) return;
                 const rect = btn.getBoundingClientRect();
                 const x = e.clientX - rect.left - rect.width / 2;
                 const y = e.clientY - rect.top - rect.height / 2;
@@ -337,8 +390,8 @@
         function animateCursor() {
             let distX = mouseX - outlineX;
             let distY = mouseY - outlineY;
-            outlineX += distX * 0.15; 
-            outlineY += distY * 0.15;
+            outlineX += distX * 0.2; 
+            outlineY += distY * 0.2;
             
             cursorDot.style.left = `${mouseX}px`;
             cursorDot.style.top = `${mouseY}px`;
@@ -361,15 +414,20 @@
                 grid.innerHTML = ''; 
 
                 projects.forEach((project, index) => {
-                    // Stagger fade-in
                     const delay = index * 100;
                     
+                    // Generate a fake "Complexity" meter
+                    const complexity = Math.floor(Math.random() * 4) + 6; // 6 to 10
+                    const complexityBar = Array(10).fill(0).map((_, i) => 
+                        `<div class="w-1 h-2 ${i < complexity ? 'bg-accent-500' : 'bg-gray-700'} rounded-[1px]"></div>`
+                    ).join('');
+
                     const card = `
                         <a href="project.html?id=${project.id}" 
                            onmousemove="tiltCard(event)"
                            onmouseleave="resetTilt(event)"
                            onmouseenter="cursorHover()" 
-                           class="tilt-card p-8 rounded-2xl flex flex-col h-full group opacity-0 animate-fade-in-up"
+                           class="tilt-card p-8 rounded-xl flex flex-col h-full group opacity-0 animate-fade-in-up hover:border-accent-500/30 transition-all relative overflow-hidden"
                            style="animation: fadeInUp 0.6s ease forwards ${delay}ms;">
                            
                            <style>
@@ -379,31 +437,30 @@
                                 }
                            </style>
 
-                           <div class="tilt-inner flex flex-col h-full">
+                           <div class="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.03)_1px,transparent_1px)] bg-[size:20px_20px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+
+                           <div class="tilt-inner flex flex-col h-full relative z-10">
                                 <div class="mb-6 flex justify-between items-start">
-                                    <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] uppercase tracking-wider font-mono text-gray-400 group-hover:border-accent-500/50 transition-colors">
-                                        ${project.type}
+                                    <span class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] uppercase tracking-wider font-mono text-accent-400">
+                                        ${project.type || "AUTOMATION"}
                                     </span>
-                                    <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-accent-500 group-hover:text-black transition-all duration-300 shadow-[0_0_0_0_rgba(34,197,94,0)] group-hover:shadow-[0_0_15px_rgba(34,197,94,0.6)]">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                                    <div class="flex gap-[2px]">
+                                        ${complexityBar}
                                     </div>
                                 </div>
 
-                                <h3 class="text-2xl text-white font-bold mb-3 group-hover:text-accent-400 transition-colors tracking-tight">
+                                <h3 class="text-xl text-white font-bold mb-3 group-hover:text-accent-400 transition-colors tracking-tight font-mono">
                                     ${project.title}
                                 </h3>
                             
-                                <p class="text-gray-400 text-sm mb-8 leading-relaxed font-light flex-grow border-b border-white/5 pb-6">
+                                <p class="text-gray-400 text-sm mb-6 leading-relaxed font-light flex-grow">
                                     ${project.description}
                                 </p>
 
-                                <div class="flex items-center justify-between mb-4">
-                                    <span class="text-xs text-gray-500 font-mono uppercase">Optimized For</span>
-                                    <span class="text-accent-400 font-bold font-mono text-sm shadow-accent">${project.metric || "Efficiency"}</span>
-                                </div>
-                                
-                                <div class="flex flex-wrap gap-2">
-                                    ${project.tags.map(tag => `<span class="text-[10px] text-gray-400 font-mono bg-black/40 px-2 py-1 rounded border border-white/10 group-hover:border-accent-500/20 transition-colors">#${tag}</span>`).join('')}
+                                <div class="border-t border-white/5 pt-4 mt-auto">
+                                    <div class="flex flex-wrap gap-2">
+                                        ${project.tags.slice(0,3).map(tag => `<span class="text-[10px] text-gray-500 font-mono group-hover:text-accent-500 transition-colors">[${tag}]</span>`).join('')}
+                                    </div>
                                 </div>
                            </div>
                         </a>
