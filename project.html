@@ -3,88 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Details</title>
+    <title>Project Details | 0bl1vyx</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    colors: { accent: { 400: '#34d399', 500: '#10b981', 600: '#059669' }, bg: { main: '#0a0a0a', card: '#111111', border: '#262626' } }
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        accent: { 
+                            400: '#4ade80', 
+                            500: '#22c55e', 
+                            600: '#16a34a',
+                            glow: 'rgba(74, 222, 128, 0.4)' 
+                        },
+                        bg: { 
+                            main: '#050505', 
+                            card: '#0f0f0f', 
+                            border: '#27272a' 
+                        }
+                    },
+                    animation: {
+                        'blob': 'blob 20s infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #0a0a0a; color: #d4d4d8; }
-        .lightbox { transition: opacity 0.3s ease; }
+        body { 
+            background-color: #050505; 
+            color: #e5e5e5; 
+            cursor: none; 
+            overflow-x: hidden;
+        }
+
+        /* --- FX LAYERS --- */
+        .noise-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 50;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .aurora-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none; overflow: hidden;
+        }
+        .aurora-blob {
+            position: absolute;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: blob 20s infinite alternate;
+            opacity: 0.6;
+        }
+        .aurora-1 { top: -20%; left: -10%; }
+        .aurora-2 { bottom: -20%; right: -10%; background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(0,0,0,0) 70%); animation-delay: -5s; }
+
+        /* --- UI COMPONENTS --- */
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+        }
+
+        /* --- CUSTOM CURSOR --- */
+        .cursor-dot, .cursor-outline {
+            position: fixed; top: 0; left: 0; transform: translate(-50%, -50%);
+            border-radius: 50%; pointer-events: none; z-index: 9999;
+        }
+        .cursor-dot { width: 8px; height: 8px; background-color: #4ade80; }
+        .cursor-outline {
+            width: 40px; height: 40px; border: 1px solid rgba(74, 222, 128, 0.3);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+        @media (pointer: coarse) {
+            .cursor-dot, .cursor-outline { display: none; }
+            body { cursor: auto; }
+        }
+        body.hovering .cursor-outline {
+            width: 60px; height: 60px; 
+            background-color: rgba(74, 222, 128, 0.05);
+            border-color: #4ade80;
+        }
+
+        /* --- SKELETON LOADER --- */
+        .skeleton {
+            background: linear-gradient(90deg, #111 25%, #1a1a1a 50%, #111 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="antialiased min-h-screen flex flex-col font-sans">
 
-    <div id="lightbox" class="fixed inset-0 z-[100] bg-black/95 hidden flex justify-center items-center p-4 opacity-0 cursor-zoom-out" onclick="closeLightbox()">
-        <img id="lightbox-img" src="" class="max-w-full max-h-full rounded-lg shadow-2xl border border-bg-border object-contain">
-        <div class="absolute top-4 right-4 text-white font-mono text-sm bg-bg-card border border-bg-border px-3 py-1 rounded cursor-pointer">CLOSE [X]</div>
+    <div class="noise-overlay"></div>
+    <div class="aurora-container">
+        <div class="aurora-blob aurora-1"></div>
+        <div class="aurora-blob aurora-2"></div>
     </div>
 
-    <nav class="w-full border-b border-bg-border bg-bg-main sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto px-6 h-16 flex justify-between items-center">
-            <a href="index.html" class="text-sm font-medium text-gray-400 hover:text-white transition flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Back to Projects
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <div id="lightbox" class="fixed inset-0 z-[100] bg-black/95 hidden flex justify-center items-center p-4 opacity-0 transition-opacity duration-300" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl border border-bg-border object-contain">
+        <div class="absolute top-6 right-6 text-white/70 hover:text-white font-mono text-xs bg-white/10 border border-white/10 px-4 py-2 rounded-full cursor-pointer transition-colors" onmouseenter="cursorHover()" onmouseleave="cursorLeave()">
+            CLOSE [ESC]
+        </div>
+    </div>
+
+    <nav class="fixed top-0 w-full z-40 border-b border-white/5 bg-black/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <a href="index.html" class="group flex items-center gap-2 text-gray-400 hover:text-white transition-colors" onmouseenter="cursorHover()" onmouseleave="cursorLeave()">
+                <div class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-accent-500/50 group-hover:text-accent-400 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                </div>
+                <span class="font-mono text-sm tracking-wide">BACK TO HQ</span>
             </a>
+            
+            <div class="text-xs font-mono text-gray-600">
+                SYSTEM // PROJECT_VIEWER_V2
+            </div>
         </div>
     </nav>
 
-    <main class="max-w-5xl mx-auto px-6 py-12 flex-grow w-full">
-        <div id="loading" class="py-20 text-center text-gray-500 font-mono animate-pulse">Loading System Data...</div>
+    <main class="max-w-7xl mx-auto px-6 pt-32 pb-20 flex-grow w-full relative z-10">
+        
+        <div id="loading" class="space-y-8 animate-pulse">
+            <div class="h-8 w-32 skeleton rounded"></div>
+            <div class="h-16 w-3/4 skeleton rounded"></div>
+            <div class="h-96 w-full skeleton rounded-xl"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="h-64 w-full skeleton rounded-xl"></div>
+                <div class="h-64 w-full skeleton rounded-xl col-span-2"></div>
+            </div>
+        </div>
 
-        <div id="project-content" class="hidden opacity-0 transition-opacity duration-500">
-            <header class="mb-8">
-                <div class="flex flex-wrap gap-2 mb-6" id="tags-container"></div>
-                <h1 id="p-title" class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight"></h1>
-                <p id="p-desc" class="text-lg text-gray-400 font-light max-w-2xl"></p>
+        <div id="project-content" class="hidden opacity-0 transition-opacity duration-700">
+            
+            <header class="mb-12">
+                <div class="flex flex-wrap items-center gap-3 mb-6" id="tags-container">
+                    </div>
+                <h1 id="p-title" class="text-4xl md:text-6xl font-extrabold text-white mb-6 leading-tight tracking-tight"></h1>
+                <p id="p-desc" class="text-lg md:text-xl text-gray-400 font-light max-w-3xl leading-relaxed border-l-2 border-accent-500/30 pl-6"></p>
             </header>
 
-            <div class="mb-16">
-                <div class="rounded-xl overflow-hidden border border-bg-border bg-bg-card relative group cursor-zoom-in" onclick="openLightbox(this.querySelector('img').src)">
-                    <img id="p-main-image" src="" class="w-full h-64 md:h-[500px] object-cover opacity-90 group-hover:opacity-100 transition-opacity" alt="Main Workflow">
-                    <div class="absolute bottom-4 right-4 bg-black/50 backdrop-blur text-xs text-white px-3 py-1 rounded font-mono">CLICK TO ENLARGE</div>
+            <div class="mb-16 space-y-4">
+                <div class="glass-panel rounded-2xl overflow-hidden relative group cursor-zoom-in border-white/10" onclick="openLightbox(document.getElementById('p-main-image').src)" onmouseenter="cursorHover()" onmouseleave="cursorLeave()">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 z-10"></div>
+                    <img id="p-main-image" src="" class="w-full h-[40vh] md:h-[60vh] object-cover object-top opacity-90 group-hover:opacity-100 group-hover:scale-[1.01] transition-all duration-700" alt="Main Workflow">
+                    
+                    <div class="absolute bottom-6 left-6 z-20 flex items-center gap-3">
+                        <span class="px-3 py-1 bg-accent-500 text-black text-[10px] font-bold tracking-widest uppercase rounded">Workflow Diagram</span>
+                        <span class="text-xs font-mono text-gray-300">High-Resolution Schematic</span>
+                    </div>
                 </div>
                 
-                <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4"></div>
+                <div id="gallery-grid" class="grid grid-cols-4 md:grid-cols-6 gap-3"></div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
                 
-                <div class="lg:col-span-4 space-y-8 order-2 lg:order-1">
-                    <div class="p-6 border border-bg-border bg-bg-card rounded-xl">
-                        <h3 class="text-gray-500 font-mono text-xs uppercase mb-1">Impact Metric</h3>
-                        <p id="p-metric" class="text-accent-400 font-bold text-2xl"></p>
+                <div class="lg:col-span-4 space-y-6 order-2 lg:order-1">
+                    
+                    <div class="glass-panel p-6 rounded-xl border-l-4 border-l-accent-500">
+                        <h3 class="text-gray-500 font-mono text-xs uppercase tracking-widest mb-2">Performance Metric</h3>
+                        <p id="p-metric" class="text-white font-bold text-3xl tracking-tight"></p>
                     </div>
 
-                    <div class="p-6 border border-bg-border bg-bg-card rounded-xl">
-                        <h3 class="text-gray-500 font-mono text-xs uppercase mb-4">Tech Stack</h3>
-                        <ul id="tech-list" class="space-y-3 text-sm text-gray-300"></ul>
+                    <div class="glass-panel p-6 rounded-xl">
+                        <h3 class="text-gray-500 font-mono text-xs uppercase tracking-widest mb-4">Tech Stack</h3>
+                        <div class="flex flex-wrap gap-2" id="tech-list">
+                            </div>
                     </div>
                     
-                    <div class="flex flex-col gap-3">
-                        <a href="mailto:priyodas567@gmail.com" class="w-full py-4 bg-accent-600 hover:bg-accent-500 text-white text-center font-bold rounded-lg transition-all shadow-[0_4px_14px_0_rgba(34,197,94,0.39)]">
-                            Hire Me to Build This
+                    <div class="space-y-3 pt-4">
+                        <a href="mailto:priyodas567@gmail.com" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="block w-full py-4 bg-accent-600 hover:bg-accent-500 text-white text-center font-bold text-sm tracking-wide uppercase rounded-lg transition-all shadow-[0_0_20px_-5px_rgba(34,197,94,0.4)] hover:shadow-[0_0_30px_-5px_rgba(34,197,94,0.6)]">
+                            Build This For Me
                         </a>
                         
-                        <a id="btn-download" href="#" target="_blank" class="hidden w-full py-4 border border-bg-border text-gray-400 hover:text-white hover:border-white transition-colors text-center font-mono text-sm rounded-lg flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            View Workflow JSON
+                        <a id="btn-download" href="#" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="hidden w-full py-4 border border-white/10 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white hover:border-white/30 transition-all text-center font-mono text-xs rounded-lg flex items-center justify-center gap-2 group">
+                            <svg class="w-4 h-4 text-gray-500 group-hover:text-accent-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            View Source JSON
                         </a>
                     </div>
                 </div>
 
                 <div class="lg:col-span-8 space-y-12 order-1 lg:order-2">
                     
-                    <div id="video-container" class="mb-12 hidden">
-                        <div class="relative w-full pb-[56.25%] bg-bg-card border border-bg-border rounded-xl overflow-hidden shadow-[0_0_30px_-10px_rgba(74,222,128,0.1)]">
+                    <div id="video-container" class="hidden">
+                        <div class="relative w-full pb-[56.25%] bg-black rounded-xl overflow-hidden border border-white/10 shadow-2xl">
                             <iframe 
                                 id="p-video" 
                                 class="absolute top-0 left-0 w-full h-full" 
@@ -94,42 +227,79 @@
                                 allowfullscreen>
                             </iframe>
                         </div>
-                        <div class="flex justify-between items-center mt-3">
-                            <span class="text-xs font-mono text-accent-500 animate-pulse">● LIVE SYSTEM DEMO</span>
-                            <span class="text-xs font-mono text-gray-500">Watch full walkthrough</span>
+                        <div class="flex items-center gap-2 mt-3 pl-1">
+                            <span class="relative flex h-2 w-2">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                              <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                            <span class="text-xs font-mono text-gray-400">LIVE SYSTEM DEMO</span>
                         </div>
                     </div>
 
-                    <section>
-                        <h2 class="text-xl text-white font-bold mb-4">The Challenge</h2>
-                        <p id="p-problem" class="text-gray-400 leading-relaxed text-lg font-light"></p>
-                    </section>
+                    <div class="space-y-10">
+                        <section>
+                            <h2 class="text-xl text-white font-bold mb-4 flex items-center gap-3">
+                                <span class="text-accent-500">01.</span> The Challenge
+                            </h2>
+                            <p id="p-problem" class="text-gray-400 leading-relaxed text-lg font-light"></p>
+                        </section>
 
-                    <section>
-                        <h2 class="text-xl text-white font-bold mb-4">The Solution</h2>
-                        <p id="p-solution" class="text-gray-400 leading-relaxed text-lg font-light"></p>
-                    </section>
-                    
-                    <section class="bg-bg-card border border-bg-border p-8 rounded-xl">
-                        <h2 class="text-accent-500 font-mono text-xs uppercase tracking-widest mb-3">FINAL OUTPUT</h2>
-                        <p id="p-result" class="text-white text-xl font-medium"></p>
-                    </section>
+                        <section>
+                            <h2 class="text-xl text-white font-bold mb-4 flex items-center gap-3">
+                                <span class="text-accent-500">02.</span> The Solution
+                            </h2>
+                            <p id="p-solution" class="text-gray-400 leading-relaxed text-lg font-light"></p>
+                        </section>
+                        
+                        <section class="glass-panel p-8 rounded-xl border border-accent-500/20 bg-accent-500/5">
+                            <h2 class="text-accent-400 font-mono text-xs uppercase tracking-widest mb-4">Final System Output</h2>
+                            <p id="p-result" class="text-white text-lg font-medium leading-relaxed"></p>
+                        </section>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <footer class="text-center py-12 text-gray-600 text-xs font-mono border-t border-bg-border mt-12">
+    <footer class="text-center py-12 text-gray-600 text-xs font-mono border-t border-white/5 bg-black/40">
         <div class="flex justify-center gap-6 mb-4">
              <a href="mailto:priyodas567@gmail.com" class="hover:text-white transition">Email</a>
              <a href="https://www.linkedin.com/in/0bl1vyx/" class="hover:text-white transition">LinkedIn</a>
              <a href="https://github.com/0bl1vyx" class="hover:text-white transition">GitHub</a>
         </div>
-        &copy; 2026 Priyo Das
+        &copy; 2026 Priyo Das • System v2.1.0
     </footer>
 
     <script>
-        // LIGHTBOX LOGIC
+        // --- CURSOR LOGIC ---
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+        let mouseX = -100, mouseY = -100;
+        let outlineX = -100, outlineY = -100;
+
+        document.addEventListener('mousemove', (e) => { 
+            mouseX = e.clientX; 
+            mouseY = e.clientY; 
+            cursorDot.style.left = `${mouseX}px`;
+            cursorDot.style.top = `${mouseY}px`;
+        });
+
+        function animateCursor() {
+            let distX = mouseX - outlineX;
+            let distY = mouseY - outlineY;
+            outlineX += distX * 0.15; 
+            outlineY += distY * 0.15;
+            cursorOutline.style.left = `${outlineX}px`;
+            cursorOutline.style.top = `${outlineY}px`;
+            requestAnimationFrame(animateCursor);
+        }
+        
+        if (window.matchMedia("(pointer: fine)").matches) { animateCursor(); }
+
+        function cursorHover() { document.body.classList.add('hovering'); }
+        function cursorLeave() { document.body.classList.remove('hovering'); }
+
+        // --- LIGHTBOX LOGIC ---
         function openLightbox(src) {
             const lb = document.getElementById('lightbox');
             const img = document.getElementById('lightbox-img');
@@ -137,6 +307,9 @@
             lb.classList.remove('hidden');
             setTimeout(() => lb.classList.remove('opacity-0'), 10);
             document.body.style.overflow = 'hidden';
+            
+            // Close on escape key
+            document.addEventListener('keydown', handleEsc);
         }
 
         function closeLightbox() {
@@ -146,21 +319,33 @@
                 lb.classList.add('hidden');
                 document.body.style.overflow = 'auto';
             }, 300);
+            document.removeEventListener('keydown', handleEsc);
         }
 
+        function handleEsc(e) { if(e.key === 'Escape') closeLightbox(); }
+
+        // --- DATA LOADER ---
         async function loadProjectDetails() {
             const urlParams = new URLSearchParams(window.location.search);
             const projectId = urlParams.get('id');
             if (!projectId) { window.location.href = 'index.html'; return; }
 
             try {
+                // Simulate slight network delay for smooth skeleton transition
+                // await new Promise(r => setTimeout(r, 600)); 
+
                 const response = await fetch('projects.json');
+                if (!response.ok) throw new Error("Database offline");
                 const projects = await response.json();
                 const project = projects.find(p => p.id === projectId);
 
-                if (!project) return;
+                if (!project) {
+                     document.body.innerHTML = "<div class='flex h-screen items-center justify-center text-red-500 font-mono'>Error 404: Project Data Not Found</div>";
+                     return;
+                }
 
-                // TEXT FIELDS
+                // Inject Text Content
+                document.title = `${project.title} | System Architecture`;
                 document.getElementById('p-title').innerText = project.title;
                 document.getElementById('p-desc').innerText = project.description;
                 document.getElementById('p-metric').innerText = project.metric;
@@ -168,37 +353,49 @@
                 document.getElementById('p-solution').innerText = project.full_details.solution;
                 document.getElementById('p-result').innerText = project.full_details.result;
 
-                // IMAGES
+                // Handle Tags
+                const tagsContainer = document.getElementById('tags-container');
+                project.tags.forEach(tag => {
+                    tagsContainer.innerHTML += `
+                        <span class="px-3 py-1 rounded border border-white/10 bg-white/5 text-[10px] uppercase font-mono tracking-wider text-accent-400">
+                            ${tag}
+                        </span>
+                    `;
+                });
+
+                // Handle Tech Stack (Styled pills)
+                const techList = document.getElementById('tech-list');
+                project.full_details.tech_stack.forEach(tech => {
+                    techList.innerHTML += `
+                        <span class="px-3 py-1.5 rounded-md bg-white/5 hover:bg-white/10 text-xs text-gray-300 border border-white/5 transition-colors cursor-default">
+                            ${tech}
+                        </span>
+                    `;
+                });
+
+                // Handle Images
                 let images = Array.isArray(project.images) ? project.images : [project.image];
                 if(images.length > 0) {
                     document.getElementById('p-main-image').src = images[0];
                 }
+                
+                // Gallery Thumbnails
+                const gallery = document.getElementById('gallery-grid');
                 if (images.length > 1) {
-                    const gallery = document.getElementById('gallery-grid');
-                    images.slice(1).forEach(imgSrc => {
+                    images.forEach((imgSrc, index) => {
+                        const activeClass = index === 0 ? 'ring-2 ring-accent-500' : '';
                         gallery.innerHTML += `
-                            <div class="rounded-lg overflow-hidden border border-bg-border h-24 cursor-pointer hover:border-accent-500 transition-colors" onclick="openLightbox('${imgSrc}')">
+                            <div class="h-20 rounded-lg overflow-hidden border border-white/10 cursor-pointer hover:opacity-80 transition-opacity ${activeClass}" 
+                                 onclick="openLightbox('${imgSrc}')">
                                 <img src="${imgSrc}" class="w-full h-full object-cover">
                             </div>
                         `;
                     });
+                } else {
+                    gallery.style.display = 'none';
                 }
 
-                // TAGS
-                const tagsContainer = document.getElementById('tags-container');
-                project.tags.forEach(tag => {
-                    tagsContainer.innerHTML += `<span class="text-xs font-mono text-accent-400 border border-accent-500/20 bg-accent-500/10 px-2 py-1 rounded">#${tag}</span>`;
-                });
-
-                // TECH STACK
-                const techList = document.getElementById('tech-list');
-                project.full_details.tech_stack.forEach(tech => {
-                    techList.innerHTML += `<li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-accent-500 rounded-full"></span>${tech}</li>`;
-                });
-
-                // --- NEW FEATURES ---
-                
-                // VIDEO EMBED
+                // Handle Video
                 if (project.video_embed && project.video_embed !== "") {
                     const videoContainer = document.getElementById('video-container');
                     const videoFrame = document.getElementById('p-video');
@@ -206,21 +403,28 @@
                     videoContainer.classList.remove('hidden');
                 }
 
-                // DOWNLOAD/GITHUB BUTTON
+                // Handle Download Button
                 if (project.workflow_download && project.workflow_download !== "") {
                     const btn = document.getElementById('btn-download');
                     btn.href = project.workflow_download;
                     btn.classList.remove('hidden');
                 }
 
-                // REVEAL CONTENT
+                // Reveal UI
                 document.getElementById('loading').classList.add('hidden');
                 const content = document.getElementById('project-content');
                 content.classList.remove('hidden');
                 setTimeout(() => content.classList.remove('opacity-0'), 50);
 
-            } catch (error) { console.error(error); }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="p-4 border border-red-500/20 bg-red-500/10 rounded text-red-400 font-mono text-center">
+                        SYSTEM ERROR: CONNECTION REFUSED
+                    </div>`;
+            }
         }
+        
         loadProjectDetails();
     </script>
 </body>
