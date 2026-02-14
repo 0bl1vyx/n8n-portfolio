@@ -16,13 +16,14 @@
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        accent: { 400: '#4ade80', 500: '#22c55e', 600: '#16a34a', glow: 'rgba(74, 222, 128, 0.5)' },
+                        accent: { 400: '#4ade80', 500: '#22c55e', 600: '#16a34a', glow: 'rgba(74, 222, 128, 0.4)' },
                         bg: { main: '#030303', card: '#0a0a0a', border: '#1f1f1f' }
                     },
                     animation: {
                         'scroll': 'scroll 40s linear infinite',
-                        'blob': 'blob 7s infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'blob': 'blob 10s infinite',
+                        'typewriter': 'typewriter 2s steps(40) 1s 1 normal both',
+                        'blink': 'blink 1s step-end infinite',
                     },
                     keyframes: {
                         scroll: {
@@ -34,6 +35,14 @@
                             '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
                             '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
                             '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        typewriter: {
+                            '0%': { width: '0%' },
+                            '100%': { width: '100%' },
+                        },
+                        blink: {
+                            '0%, 100%': { borderColor: 'transparent' },
+                            '50%': { borderColor: '#4ade80' },
                         }
                     }
                 }
@@ -44,113 +53,119 @@
         body { 
             background-color: #030303; 
             color: #e5e5e5; 
-            cursor: none; /* Custom cursor active */
+            cursor: none; 
             overflow-x: hidden;
         }
 
-        /* --- GLOBAL TEXTURE --- */
-        .noise-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-            pointer-events: none; z-index: 50; opacity: 0.4;
-            mix-blend-mode: overlay;
+        /* --- AURORA BACKGROUND --- */
+        .aurora-blob {
+            position: fixed; top: 50%; left: 50%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.15) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none; z-index: 0;
+            filter: blur(80px);
+            animation: blob 20s infinite alternate;
         }
+        .aurora-1 { top: -10%; left: -10%; animation-delay: 0s; background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, rgba(0,0,0,0) 70%); }
+        .aurora-2 { top: 40%; right: -20%; animation-delay: -5s; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(0,0,0,0) 70%); }
+        .aurora-3 { bottom: -20%; left: 20%; animation-delay: -10s; background: radial-gradient(circle, rgba(5, 150, 105, 0.1) 0%, rgba(0,0,0,0) 70%); }
 
-        /* --- SPOTLIGHT EFFECT --- */
-        #spotlight {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(800px circle at var(--x) var(--y), rgba(34, 197, 94, 0.06), transparent 40%);
-            z-index: 1; pointer-events: none;
-            will-change: background;
-        }
-        
-        /* --- BACKGROUND GRID --- */
+        /* --- GRID OVERLAY --- */
         .bg-grid {
-            background-size: 50px 50px;
-            background-image: linear-gradient(to right, #1a1a1a 1px, transparent 1px),
-                              linear-gradient(to bottom, #1a1a1a 1px, transparent 1px);
+            background-size: 60px 60px;
+            background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
             mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
             -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-            opacity: 0.3;
+            pointer-events: none; z-index: 1;
         }
 
-        /* --- CUSTOM CURSOR --- */
+        /* --- MAGNETIC BUTTONS --- */
+        .magnetic-btn {
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* --- 3D TILT CARD --- */
+        .tilt-card {
+            background: rgba(15, 15, 15, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+            transition: border-color 0.3s;
+        }
+        .tilt-card:hover {
+            border-color: rgba(34, 197, 94, 0.5);
+            box-shadow: 0 20px 50px -20px rgba(34, 197, 94, 0.2);
+        }
+        .tilt-inner {
+            transform: translateZ(20px);
+        }
+
+        /* --- CURSOR --- */
         .cursor-dot, .cursor-outline {
             position: fixed; top: 0; left: 0; transform: translate(-50%, -50%);
             border-radius: 50%; pointer-events: none; z-index: 9999;
         }
-        .cursor-dot { width: 8px; height: 8px; background-color: #4ade80; }
+        .cursor-dot { width: 8px; height: 8px; background-color: #4ade80; box-shadow: 0 0 10px #4ade80; }
         .cursor-outline {
-            width: 40px; height: 40px; border: 1px solid rgba(74, 222, 128, 0.5);
-            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            width: 40px; height: 40px; border: 1px solid rgba(74, 222, 128, 0.3);
+            transition: width 0.2s, height 0.2s, background-color 0.2s, border-color 0.2s;
         }
         body.hovering .cursor-outline {
-            width: 60px; height: 60px; background-color: rgba(74, 222, 128, 0.1);
+            width: 60px; height: 60px; background-color: rgba(74, 222, 128, 0.05);
             border-color: #4ade80; mix-blend-mode: screen;
         }
-
-        /* --- CARDS & HOVER EFFECTS --- */
-        .glass-card {
-            background: rgba(10, 10, 10, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative; overflow: hidden;
-        }
-        
-        /* The shimmering border effect */
-        .glass-card::before {
-            content: "";
-            position: absolute; inset: -1px; z-index: -1;
-            background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(34, 197, 94, 0.4), transparent 40%);
-            opacity: 0; transition: opacity 0.3s;
-        }
-        .glass-card:hover::before { opacity: 1; }
-        .glass-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 20px 40px -20px rgba(34, 197, 94, 0.15); }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .text-glow { text-shadow: 0 0 20px rgba(34, 197, 94, 0.4); }
+        .typewriter-cursor {
+            border-right: 2px solid #4ade80;
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: bottom;
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-accent-500/30 selection:text-white relative">
 
-    <div class="noise-overlay"></div>
-    <div id="spotlight"></div>
+    <div class="aurora-blob aurora-1"></div>
+    <div class="aurora-blob aurora-2"></div>
+    <div class="aurora-blob aurora-3"></div>
+    <div class="fixed inset-0 z-1 bg-grid"></div>
+
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
 
-    <div class="fixed inset-0 z-0 bg-grid pointer-events-none"></div>
-
-    <nav class="fixed top-0 w-full z-50 border-b border-white/5 bg-bg-main/80 backdrop-blur-md">
+    <nav class="fixed top-0 w-full z-50 border-b border-white/5 bg-black/50 backdrop-blur-xl">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-            <div class="text-base font-bold tracking-tight flex items-center gap-2 group cursor-pointer" onclick="window.scrollTo(0,0)">
+            <div class="text-base font-bold tracking-tight flex items-center gap-2 group cursor-pointer" onclick="window.scrollTo(0,0)" onmouseenter="cursorHover()" onmouseleave="cursorLeave()">
                 <span class="text-accent-500 font-mono text-xl group-hover:rotate-12 transition-transform">./</span> 
-                <span class="tracking-widest">PRIYO DAS</span>
+                <span class="tracking-widest group-hover:text-white transition-colors">PRIYO DAS</span>
             </div>
             <div class="flex items-center gap-6">
-                <a href="https://www.linkedin.com/in/0bl1vyx/" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="hidden md:block text-sm text-gray-400 hover:text-white transition-colors">LinkedIn</a>
-                <a href="mailto:priyodas567@gmail.com" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="text-xs font-bold bg-white text-black hover:bg-accent-400 hover:scale-105 px-6 py-3 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:shadow-[0_0_20px_rgba(74,222,128,0.6)]">
+                <a href="mailto:priyodas567@gmail.com" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="magnetic-btn text-xs font-bold bg-white text-black hover:bg-accent-400 px-6 py-3 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(74,222,128,0.5)] hover:scale-105">
                     Start a Project
                 </a>
             </div>
         </div>
     </nav>
 
-    <header class="max-w-6xl mx-auto px-6 pt-40 md:pt-60 pb-20 md:pb-32 relative z-10">
+    <header class="max-w-6xl mx-auto px-6 pt-40 md:pt-56 pb-20 md:pb-32 relative z-10">
         <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-10 hover:border-accent-500/50 transition-colors cursor-default">
             <span class="relative flex h-2.5 w-2.5">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent-500"></span>
             </span>
-            <span class="text-xs font-mono text-gray-300 tracking-wide">AVAILABLE FOR WORK</span>
+            <span class="text-xs font-mono text-gray-300 tracking-wide">SYSTEMS ONLINE • AVAILABLE</span>
         </div>
 
         <h1 class="text-5xl md:text-8xl font-extrabold text-white mb-8 tracking-tight leading-[1.1]">
             I build systems that <br>
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 via-emerald-400 to-cyan-500 animate-pulse-slow text-glow">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 via-emerald-400 to-cyan-500 typewriter-cursor animate-typewriter animate-blink">
                 run your business.
             </span>
         </h1>
@@ -164,18 +179,19 @@
         </p>
         
         <div class="flex flex-col md:flex-row gap-5">
-            <a href="#work" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="px-8 py-4 bg-accent-600 hover:bg-accent-500 text-white font-bold rounded-lg transition-all shadow-[0_0_30px_-10px_rgba(34,197,94,0.6)] hover:translate-y-[-2px] flex items-center justify-center gap-3 text-sm tracking-wide uppercase">
+            <a href="#work" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="magnetic-btn px-8 py-4 bg-accent-600 hover:bg-accent-500 text-white font-bold rounded-lg transition-all shadow-[0_0_30px_-10px_rgba(34,197,94,0.6)] flex items-center justify-center gap-3 text-sm tracking-wide uppercase group">
                 Explore Workflows
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                <svg class="w-4 h-4 group-hover:translate-y-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
             </a>
-            <a href="https://github.com/0bl1vyx" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="px-8 py-4 border border-white/10 hover:border-white/30 bg-white/5 hover:bg-white/10 text-gray-300 font-medium rounded-lg transition-all flex items-center justify-center gap-3 text-sm tracking-wide uppercase group">
-                <svg class="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                View Code
+
+            <a href="https://www.linkedin.com/in/0bl1vyx/" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="magnetic-btn px-8 py-4 border border-white/10 hover:border-[#0077b5]/50 bg-white/5 hover:bg-[#0077b5]/10 text-gray-300 hover:text-white font-medium rounded-lg transition-all flex items-center justify-center gap-3 text-sm tracking-wide uppercase group">
+                <svg class="w-5 h-5 text-gray-500 group-hover:text-[#0077b5] transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                Connect on LinkedIn
             </a>
         </div>
     </header>
 
-    <div class="border-y border-white/5 bg-black/20 overflow-hidden relative z-20 py-10">
+    <div class="border-y border-white/5 bg-black/40 overflow-hidden relative z-20 py-10 backdrop-blur-sm">
         <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-bg-main to-transparent z-20"></div>
         <div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-bg-main to-transparent z-20"></div>
 
@@ -201,32 +217,40 @@
 
     <section class="max-w-7xl mx-auto px-6 py-32 relative z-10">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="glass-card p-10 rounded-2xl group" onmousemove="handleCardMove(event)" onmouseenter="cursorHover()" onmouseleave="cursorLeave()">
-                <div class="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-8 text-accent-400 group-hover:scale-110 transition-transform duration-300 border border-white/5 group-hover:border-accent-500/30">
-                    <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+            <div class="tilt-card p-10 rounded-2xl group cursor-default" onmousemove="tiltCard(event)" onmouseleave="resetTilt(event)" onmouseenter="cursorHover()">
+                <div class="tilt-inner">
+                    <div class="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-8 text-accent-400 group-hover:scale-110 transition-transform duration-300 border border-white/5 group-hover:border-accent-500/30">
+                        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-2xl mb-4 group-hover:text-accent-400 transition-colors">Complex Logic</h3>
+                    <p class="text-gray-400 leading-relaxed font-light">
+                        I don't just zap data. I build logic-heavy workflows with conditional branching, error handling, retries, and data normalization.
+                    </p>
                 </div>
-                <h3 class="text-white font-bold text-2xl mb-4 group-hover:text-accent-400 transition-colors">Complex Logic</h3>
-                <p class="text-gray-400 leading-relaxed font-light">
-                    I don't just zap data. I build logic-heavy workflows with conditional branching, error handling, retries, and data normalization.
-                </p>
             </div>
-            <div class="glass-card p-10 rounded-2xl group" onmousemove="handleCardMove(event)" onmouseenter="cursorHover()" onmouseleave="cursorLeave()">
-                <div class="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-8 text-accent-400 group-hover:scale-110 transition-transform duration-300 border border-white/5 group-hover:border-accent-500/30">
-                    <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            
+            <div class="tilt-card p-10 rounded-2xl group cursor-default" onmousemove="tiltCard(event)" onmouseleave="resetTilt(event)" onmouseenter="cursorHover()">
+                <div class="tilt-inner">
+                    <div class="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-8 text-accent-400 group-hover:scale-110 transition-transform duration-300 border border-white/5 group-hover:border-accent-500/30">
+                        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-2xl mb-4 group-hover:text-accent-400 transition-colors">Scale Ready</h3>
+                    <p class="text-gray-400 leading-relaxed font-light">
+                        Systems designed to handle thousands of executions. Built on robust self-hosted n8n instances on Linux servers.
+                    </p>
                 </div>
-                <h3 class="text-white font-bold text-2xl mb-4 group-hover:text-accent-400 transition-colors">Scale Ready</h3>
-                <p class="text-gray-400 leading-relaxed font-light">
-                    Systems designed to handle thousands of executions. Built on robust self-hosted n8n instances on Linux servers, avoiding cloud limits.
-                </p>
             </div>
-            <div class="glass-card p-10 rounded-2xl group" onmousemove="handleCardMove(event)" onmouseenter="cursorHover()" onmouseleave="cursorLeave()">
-                <div class="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-8 text-accent-400 group-hover:scale-110 transition-transform duration-300 border border-white/5 group-hover:border-accent-500/30">
-                    <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+
+            <div class="tilt-card p-10 rounded-2xl group cursor-default" onmousemove="tiltCard(event)" onmouseleave="resetTilt(event)" onmouseenter="cursorHover()">
+                <div class="tilt-inner">
+                    <div class="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-8 text-accent-400 group-hover:scale-110 transition-transform duration-300 border border-white/5 group-hover:border-accent-500/30">
+                        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-2xl mb-4 group-hover:text-accent-400 transition-colors">Security First</h3>
+                    <p class="text-gray-400 leading-relaxed font-light">
+                        Your data stays safe. I implement secure API authentication, environment variable management, and ethical scraping practices.
+                    </p>
                 </div>
-                <h3 class="text-white font-bold text-2xl mb-4 group-hover:text-accent-400 transition-colors">Security First</h3>
-                <p class="text-gray-400 leading-relaxed font-light">
-                    Your data stays safe. I implement secure API authentication, environment variable management, and ethical scraping practices.
-                </p>
             </div>
         </div>
     </section>
@@ -245,10 +269,7 @@
         </div>
         
         <div id="project-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="col-span-full h-64 flex items-center justify-center text-gray-500 font-mono animate-pulse">
-                Accessing Database...
             </div>
-        </div>
     </main>
 
     <footer class="border-t border-white/5 bg-black/40 relative z-10 mt-32 backdrop-blur-lg">
@@ -258,73 +279,80 @@
                 <p class="text-gray-500 text-sm font-light">Automation Specialist & Full Stack Developer</p>
                 <div class="text-gray-600 text-xs mt-4 font-mono">LOCATION: KOLKATA, INDIA</div>
             </div>
-            <div class="flex gap-8">
-                <a href="mailto:priyodas567@gmail.com" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="text-gray-400 hover:text-accent-400 transition-colors text-sm flex items-center gap-2 group">
-                    <span class="bg-white/5 p-2 rounded-lg group-hover:bg-accent-500/10 transition-colors">✉️</span> priyodas567@gmail.com
+            <div class="flex gap-4">
+                <a href="mailto:priyodas567@gmail.com" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="magnetic-btn text-gray-400 hover:text-white hover:bg-white/5 px-4 py-2 rounded-lg transition-all flex items-center gap-2">
+                    ✉️ Email Me
                 </a>
-                <a href="https://www.linkedin.com/in/0bl1vyx/" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="text-gray-400 hover:text-accent-400 transition-colors text-sm flex items-center gap-2 group">
-                    <span class="bg-white/5 p-2 rounded-lg group-hover:bg-accent-500/10 transition-colors">🔗</span> LinkedIn
-                </a>
-                <a href="https://github.com/0bl1vyx" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="text-gray-400 hover:text-accent-400 transition-colors text-sm flex items-center gap-2 group">
-                    <span class="bg-white/5 p-2 rounded-lg group-hover:bg-accent-500/10 transition-colors">💻</span> GitHub
+                <a href="https://www.linkedin.com/in/0bl1vyx/" target="_blank" onmouseenter="cursorHover()" onmouseleave="cursorLeave()" class="magnetic-btn text-gray-400 hover:text-white hover:bg-[#0077b5]/20 px-4 py-2 rounded-lg transition-all flex items-center gap-2">
+                    🔗 LinkedIn
                 </a>
             </div>
         </div>
     </footer>
 
     <script>
-        // --- SPOTLIGHT & CARD HOVER LOGIC ---
-        const spotlight = document.getElementById('spotlight');
-
-        document.addEventListener('mousemove', (e) => {
-            const x = e.clientX;
-            const y = e.clientY;
-            
-            // Move Global Spotlight
-            spotlight.style.setProperty('--x', `${x}px`);
-            spotlight.style.setProperty('--y', `${y}px`);
-            
-            // Move Cursor Elements
-            cursorDot.style.left = `${x}px`;
-            cursorDot.style.top = `${y}px`;
-            
-            // Smooth Outline Animation
-            animateCursor(x, y);
-        });
-
-        function handleCardMove(e) {
+        // --- 3D TILT EFFECT ---
+        function tiltCard(e) {
             const card = e.currentTarget;
             const rect = card.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
-            card.style.setProperty('--mouse-x', `${x}px`);
-            card.style.setProperty('--mouse-y', `${y}px`);
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = ((y - centerY) / centerY) * -5; // Max 5deg tilt
+            const rotateY = ((x - centerX) / centerX) * 5;
+
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
         }
 
-        // --- SMOOTH CURSOR ANIMATION ---
+        function resetTilt(e) {
+            const card = e.currentTarget;
+            card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+        }
+
+        // --- MAGNETIC BUTTONS ---
+        const magneticBtns = document.querySelectorAll('.magnetic-btn');
+        magneticBtns.forEach(btn => {
+            btn.addEventListener('mousemove', function(e) {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
+            });
+            btn.addEventListener('mouseleave', function() {
+                btn.style.transform = 'translate(0px, 0px)';
+            });
+        });
+
+        // --- CURSOR ---
         const cursorDot = document.querySelector('.cursor-dot');
         const cursorOutline = document.querySelector('.cursor-outline');
-        let outlineX = 0, outlineY = 0;
         let mouseX = 0, mouseY = 0;
+        let outlineX = 0, outlineY = 0;
 
         document.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
 
-        function animateCursorLoop() {
+        function animateCursor() {
             let distX = mouseX - outlineX;
             let distY = mouseY - outlineY;
             outlineX += distX * 0.15; 
             outlineY += distY * 0.15;
-            cursorOutline.style.left = outlineX + 'px';
-            cursorOutline.style.top = outlineY + 'px';
-            requestAnimationFrame(animateCursorLoop);
+            
+            cursorDot.style.left = `${mouseX}px`;
+            cursorDot.style.top = `${mouseY}px`;
+            cursorOutline.style.left = `${outlineX}px`;
+            cursorOutline.style.top = `${outlineY}px`;
+            
+            requestAnimationFrame(animateCursor);
         }
-        animateCursorLoop();
+        animateCursor();
 
         function cursorHover() { document.body.classList.add('hovering'); }
         function cursorLeave() { document.body.classList.remove('hovering'); }
 
-        // --- PROJECT LOADING (Maintained Compatibility) ---
+        // --- LOAD PROJECTS ---
         async function loadProjects() {
             try {
                 const response = await fetch('projects.json');
@@ -333,49 +361,51 @@
                 grid.innerHTML = ''; 
 
                 projects.forEach((project, index) => {
-                    // Stagger animation delay
+                    // Stagger fade-in
                     const delay = index * 100;
                     
                     const card = `
                         <a href="project.html?id=${project.id}" 
-                           onmousemove="handleCardMove(event)"
+                           onmousemove="tiltCard(event)"
+                           onmouseleave="resetTilt(event)"
                            onmouseenter="cursorHover()" 
-                           onmouseleave="cursorLeave()" 
-                           class="glass-card p-8 rounded-2xl flex flex-col h-full group opacity-0 animate-fade-in-up"
-                           style="animation: fadeInUp 0.5s ease forwards ${delay}ms;">
+                           class="tilt-card p-8 rounded-2xl flex flex-col h-full group opacity-0 animate-fade-in-up"
+                           style="animation: fadeInUp 0.6s ease forwards ${delay}ms;">
                            
                            <style>
                                 @keyframes fadeInUp {
-                                    from { opacity: 0; transform: translateY(20px); }
+                                    from { opacity: 0; transform: translateY(30px); }
                                     to { opacity: 1; transform: translateY(0); }
                                 }
                            </style>
 
-                            <div class="mb-6 flex justify-between items-start">
-                                <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] uppercase tracking-wider font-mono text-gray-400 group-hover:border-accent-500/50 transition-colors">
-                                    ${project.type}
-                                </span>
-                                <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-accent-500 group-hover:text-black transition-all duration-300">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                           <div class="tilt-inner flex flex-col h-full">
+                                <div class="mb-6 flex justify-between items-start">
+                                    <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] uppercase tracking-wider font-mono text-gray-400 group-hover:border-accent-500/50 transition-colors">
+                                        ${project.type}
+                                    </span>
+                                    <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-accent-500 group-hover:text-black transition-all duration-300 shadow-[0_0_0_0_rgba(34,197,94,0)] group-hover:shadow-[0_0_15px_rgba(34,197,94,0.6)]">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <h3 class="text-2xl text-white font-bold mb-3 group-hover:text-accent-400 transition-colors tracking-tight">
-                                ${project.title}
-                            </h3>
-                           
-                            <p class="text-gray-400 text-sm mb-8 leading-relaxed font-light flex-grow border-b border-white/5 pb-6">
-                                ${project.description}
-                            </p>
-
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="text-xs text-gray-500 font-mono uppercase">Optimized For</span>
-                                <span class="text-accent-400 font-bold font-mono text-sm shadow-accent">${project.metric || "Efficiency"}</span>
-                            </div>
+                                <h3 class="text-2xl text-white font-bold mb-3 group-hover:text-accent-400 transition-colors tracking-tight">
+                                    ${project.title}
+                                </h3>
                             
-                            <div class="flex flex-wrap gap-2">
-                                ${project.tags.map(tag => `<span class="text-[10px] text-gray-400 font-mono bg-black/40 px-2 py-1 rounded border border-white/10 group-hover:border-accent-500/20 transition-colors">#${tag}</span>`).join('')}
-                            </div>
+                                <p class="text-gray-400 text-sm mb-8 leading-relaxed font-light flex-grow border-b border-white/5 pb-6">
+                                    ${project.description}
+                                </p>
+
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="text-xs text-gray-500 font-mono uppercase">Optimized For</span>
+                                    <span class="text-accent-400 font-bold font-mono text-sm shadow-accent">${project.metric || "Efficiency"}</span>
+                                </div>
+                                
+                                <div class="flex flex-wrap gap-2">
+                                    ${project.tags.map(tag => `<span class="text-[10px] text-gray-400 font-mono bg-black/40 px-2 py-1 rounded border border-white/10 group-hover:border-accent-500/20 transition-colors">#${tag}</span>`).join('')}
+                                </div>
+                           </div>
                         </a>
                     `;
                     grid.innerHTML += card;
@@ -386,7 +416,6 @@
             }
         }
         
-        // Initial Load
         loadProjects();
     </script>
 </body>
